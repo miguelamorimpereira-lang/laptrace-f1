@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StandingsRouteImport } from './routes/standings'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RacesRouteImport } from './routes/races'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RacesRoundRouteImport } from './routes/races.$round'
@@ -17,6 +18,11 @@ import { Route as RacesRoundRouteImport } from './routes/races.$round'
 const StandingsRoute = StandingsRouteImport.update({
   id: '/standings',
   path: '/standings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RacesRoute = RacesRouteImport.update({
@@ -38,12 +44,14 @@ const RacesRoundRoute = RacesRoundRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/races': typeof RacesRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/standings': typeof StandingsRoute
   '/races/$round': typeof RacesRoundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/races': typeof RacesRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/standings': typeof StandingsRoute
   '/races/$round': typeof RacesRoundRoute
 }
@@ -51,20 +59,28 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/races': typeof RacesRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/standings': typeof StandingsRoute
   '/races/$round': typeof RacesRoundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/races' | '/standings' | '/races/$round'
+  fullPaths: '/' | '/races' | '/sitemap.xml' | '/standings' | '/races/$round'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/races' | '/standings' | '/races/$round'
-  id: '__root__' | '/' | '/races' | '/standings' | '/races/$round'
+  to: '/' | '/races' | '/sitemap.xml' | '/standings' | '/races/$round'
+  id:
+    | '__root__'
+    | '/'
+    | '/races'
+    | '/sitemap.xml'
+    | '/standings'
+    | '/races/$round'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RacesRoute: typeof RacesRouteWithChildren
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StandingsRoute: typeof StandingsRoute
 }
 
@@ -75,6 +91,13 @@ declare module '@tanstack/react-router' {
       path: '/standings'
       fullPath: '/standings'
       preLoaderRoute: typeof StandingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/races': {
@@ -114,6 +137,7 @@ const RacesRouteWithChildren = RacesRoute._addFileChildren(RacesRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RacesRoute: RacesRouteWithChildren,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   StandingsRoute: StandingsRoute,
 }
 export const routeTree = rootRouteImport
