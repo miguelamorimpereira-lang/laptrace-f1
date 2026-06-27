@@ -88,7 +88,7 @@ export function LapChart({
               fontFamily: "JetBrains Mono",
             }}
             labelStyle={{ color: "oklch(0.66 0.02 260)" }}
-            formatter={(value: number, name: string) => [formatSeconds(value), name]}
+            formatter={(value, name) => [formatSeconds(Number(value)), String(name)]}
             labelFormatter={(l) => `Lap ${l}`}
           />
           <Legend wrapperStyle={{ fontSize: 11, fontFamily: "JetBrains Mono" }} />
