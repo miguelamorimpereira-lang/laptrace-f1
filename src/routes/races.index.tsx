@@ -4,7 +4,7 @@ import { seasonsQuery, racesQuery } from "@/lib/jolpica";
 import { ErrorBox, Spinner } from "@/components/ui-bits";
 import { SeasonSelect } from "@/components/SeasonSelect";
 
-export const Route = createFileRoute("/races")({
+export const Route = createFileRoute("/races/")({
   validateSearch: (s: Record<string, unknown>) => ({
     season: typeof s.season === "string" ? s.season : undefined,
   }),
