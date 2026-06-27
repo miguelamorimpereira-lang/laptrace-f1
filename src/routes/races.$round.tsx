@@ -3,6 +3,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { seasonsQuery, raceResultsQuery, lapsQuery, constructorColor } from "@/lib/jolpica";
 import { Section, ErrorBox, Spinner } from "@/components/ui-bits";
 import { LapChart } from "@/components/LapChart";
+import { BestLapChart } from "@/components/BestLapChart";
+import { TelemetrySection } from "@/components/TelemetrySection";
 
 export const Route = createFileRoute("/races/$round")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -79,9 +81,18 @@ function RaceDetail() {
         )}
       </div>
 
-      <Section title="Lap Time Comparison — Top 5 Finishers">
+      <Section title="Lap Times — All Laps">
         <LapChart laps={laps} results={results} />
       </Section>
+
+      <Section title="Fastest Lap per Driver — Gap to Best">
+        <BestLapChart laps={laps} results={results} />
+      </Section>
+
+      <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear · DRS">
+        <TelemetrySection season={season} results={results} raceDate={race.date} />
+      </Section>
+
 
       <Section title="Race Classification">
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
