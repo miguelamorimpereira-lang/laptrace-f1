@@ -8,7 +8,16 @@ const BASE = "https://api.openf1.org/v1";
  * Every fetch goes through here so we can surface a clean, typed error.
  */
 async function get<T>(path: string): Promise<T[]> {
-  const res = await fetch(`${BASE}${path}`);
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`);
+  } catch {
+    // OpenF1 drops CORS headers on its error responses, so a live-session
+    // lock surfaces here as a network/CORS failure rather than clean JSON.
+    throw new Error(
+      "OpenF1 telemetry is temporarily unavailable — it gets locked while a live session is running. Try again once the current session has finished.",
+    );
+  }
   const json = await res.json();
   if (!Array.isArray(json)) {
     const detail =
