@@ -76,7 +76,7 @@ function Channel({
             <Line
               key={d.code}
               type={step ? "stepAfter" : "monotone"}
-              dataKey={`${d.code}_${title.toLowerCase().split(" ")[0] === "drs" ? "drs" : key(title)}`}
+              dataKey={`${d.code}_${key(title)}`}
               name={d.code}
               stroke={d.color}
               strokeWidth={1.75}
