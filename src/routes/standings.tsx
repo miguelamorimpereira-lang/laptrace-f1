@@ -14,7 +14,7 @@ import {
 
 export const Route = createFileRoute("/standings")({
   validateSearch: (s: Record<string, unknown>) => ({
-    season: typeof s.season === "string" ? s.season : undefined,
+    season: s.season == null || s.season === "" ? undefined : String(s.season),
   }),
   loaderDeps: ({ search }) => ({ season: search.season }),
   loader: async ({ context, deps }) => {
