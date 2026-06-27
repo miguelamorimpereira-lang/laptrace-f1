@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StandingsRouteImport } from './routes/standings'
 import { Route as RacesRouteImport } from './routes/races'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RacesRoundRouteImport } from './routes/races.$round'
 
 const StandingsRoute = StandingsRouteImport.update({
   id: '/standings',
@@ -28,34 +29,42 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RacesRoundRoute = RacesRoundRouteImport.update({
+  id: '/$round',
+  path: '/$round',
+  getParentRoute: () => RacesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/races': typeof RacesRoute
+  '/races': typeof RacesRouteWithChildren
   '/standings': typeof StandingsRoute
+  '/races/$round': typeof RacesRoundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/races': typeof RacesRoute
+  '/races': typeof RacesRouteWithChildren
   '/standings': typeof StandingsRoute
+  '/races/$round': typeof RacesRoundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/races': typeof RacesRoute
+  '/races': typeof RacesRouteWithChildren
   '/standings': typeof StandingsRoute
+  '/races/$round': typeof RacesRoundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/races' | '/standings'
+  fullPaths: '/' | '/races' | '/standings' | '/races/$round'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/races' | '/standings'
-  id: '__root__' | '/' | '/races' | '/standings'
+  to: '/' | '/races' | '/standings' | '/races/$round'
+  id: '__root__' | '/' | '/races' | '/standings' | '/races/$round'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  RacesRoute: typeof RacesRoute
+  RacesRoute: typeof RacesRouteWithChildren
   StandingsRoute: typeof StandingsRoute
 }
 
@@ -82,12 +91,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/races/$round': {
+      id: '/races/$round'
+      path: '/$round'
+      fullPath: '/races/$round'
+      preLoaderRoute: typeof RacesRoundRouteImport
+      parentRoute: typeof RacesRoute
+    }
   }
 }
 
+interface RacesRouteChildren {
+  RacesRoundRoute: typeof RacesRoundRoute
+}
+
+const RacesRouteChildren: RacesRouteChildren = {
+  RacesRoundRoute: RacesRoundRoute,
+}
+
+const RacesRouteWithChildren = RacesRoute._addFileChildren(RacesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  RacesRoute: RacesRoute,
+  RacesRoute: RacesRouteWithChildren,
   StandingsRoute: StandingsRoute,
 }
 export const routeTree = rootRouteImport

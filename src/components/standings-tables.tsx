@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import type { DriverStanding, ConstructorStanding } from "@/lib/jolpica";
 import { constructorColor } from "@/lib/jolpica";
 
