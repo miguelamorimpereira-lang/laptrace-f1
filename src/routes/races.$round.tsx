@@ -81,9 +81,18 @@ function RaceDetail() {
         )}
       </div>
 
-      <Section title="Lap Time Comparison — Top 5 Finishers">
+      <Section title="Lap Times — All Laps">
         <LapChart laps={laps} results={results} />
       </Section>
+
+      <Section title="Fastest Lap per Driver — Gap to Best">
+        <BestLapChart laps={laps} results={results} />
+      </Section>
+
+      <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear · DRS">
+        <TelemetrySection season={season} results={results} raceDate={race.date} />
+      </Section>
+
 
       <Section title="Race Classification">
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
