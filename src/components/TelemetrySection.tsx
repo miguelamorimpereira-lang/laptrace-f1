@@ -133,7 +133,7 @@ function TelemetryBody({
     }
   });
 
-  const merged = useMemoMerge(series);
+  const merged = mergeTelemetry(series);
 
   const lapLabels = activeIds
     .map((id, i) => {
@@ -186,9 +186,3 @@ function TelemetryBody({
   );
 }
 
-// Keep merge stable across renders without re-running on unrelated state.
-function useMemoMerge(series: TelemetryDriverSeries[]) {
-  const sig = series.map((s) => `${s.code}:${s.samples.length}`).join("|");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => mergeTelemetry(series), [sig]);
-}
