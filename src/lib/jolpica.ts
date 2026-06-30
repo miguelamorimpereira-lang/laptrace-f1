@@ -46,7 +46,7 @@ export interface ConstructorStanding {
 export interface Circuit {
   circuitId: string;
   circuitName: string;
-  Location: { locality: string; country: string };
+  Location: { locality: string; country: string; lat?: string; long?: string };
 }
 export interface Race {
   season: string;

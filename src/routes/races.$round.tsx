@@ -5,6 +5,7 @@ import { Section, ErrorBox, Spinner } from "@/components/ui-bits";
 import { LapChart } from "@/components/LapChart";
 import { BestLapChart } from "@/components/BestLapChart";
 import { TelemetrySection } from "@/components/TelemetrySection";
+import { TrackMap } from "@/components/TrackMap";
 
 export const Route = createFileRoute("/races/$round")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -80,6 +81,14 @@ function RaceDetail() {
           </p>
         )}
       </div>
+
+      <Section title="Circuit Layout">
+        <TrackMap
+          lat={race.Circuit.Location.lat}
+          long={race.Circuit.Location.long}
+          circuitName={race.Circuit.circuitName}
+        />
+      </Section>
 
       <Section title="Lap Times — All Laps">
         <LapChart laps={laps} results={results} />
