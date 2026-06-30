@@ -82,6 +82,14 @@ function RaceDetail() {
         )}
       </div>
 
+      <Section title="Circuit Layout">
+        <TrackMap
+          lat={race.Circuit.Location.lat}
+          long={race.Circuit.Location.long}
+          circuitName={race.Circuit.circuitName}
+        />
+      </Section>
+
       <Section title="Lap Times — All Laps">
         <LapChart laps={laps} results={results} />
       </Section>
