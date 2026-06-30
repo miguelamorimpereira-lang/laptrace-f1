@@ -111,9 +111,9 @@ export const getLaps = async (season: string, round: string): Promise<Lap[]> => 
   while (offset < total) {
     const data = await get<{
       total: string;
-      RaceTable: { Races: { Laps: Lap[] }[] }[];
+      RaceTable: { Races: { Laps: Lap[] }[] };
     }>(`/${season}/${round}/laps/?limit=${PAGE}&offset=${offset}`);
-    total = Number((data as unknown as { total: string }).total) || 0;
+    total = Number(data.total) || 0;
     const laps = data.RaceTable.Races[0]?.Laps ?? [];
     for (const lap of laps) {
       const existing = byNumber.get(lap.number);
