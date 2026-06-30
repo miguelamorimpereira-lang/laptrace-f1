@@ -3,10 +3,17 @@ import { queryOptions } from "@tanstack/react-query";
 const BASE = "https://api.jolpi.ca/ergast/f1";
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) throw new Error(`Jolpica API error ${res.status} on ${path}`);
-  const json = await res.json();
-  return json.MRData as T;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetch(`${BASE}${path}`);
+    if (res.status === 429) {
+      await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      continue;
+    }
+    if (!res.ok) throw new Error(`Jolpica API error ${res.status} on ${path}`);
+    const json = await res.json();
+    return json.MRData as T;
+  }
+  throw new Error(`Jolpica API rate limited on ${path}`);
 }
 
 /* ---------- Types ---------- */
@@ -98,10 +105,34 @@ export const getRaceResults = (season: string, round: string) =>
     (d) => d.RaceTable.Races[0] ?? null,
   );
 
-export const getLaps = (season: string, round: string) =>
-  get<{ RaceTable: { Races: { Laps: Lap[] }[] } }>(
-    `/${season}/${round}/laps/?limit=2000`,
-  ).then((d) => d.RaceTable.Races[0]?.Laps ?? []);
+/**
+ * Jolpica caps `limit` at 100 timing rows per request, so a single call only
+ * returns ~5 laps. Page through every timing row and merge them by lap number.
+ */
+export const getLaps = async (season: string, round: string): Promise<Lap[]> => {
+  const PAGE = 100;
+  const byNumber = new Map<string, Lap>();
+  let offset = 0;
+  let total = Infinity;
+
+  while (offset < total) {
+    const data = await get<{
+      total: string;
+      RaceTable: { Races: { Laps: Lap[] }[] };
+    }>(`/${season}/${round}/laps/?limit=${PAGE}&offset=${offset}`);
+    total = Number(data.total) || 0;
+    const laps = data.RaceTable.Races[0]?.Laps ?? [];
+    for (const lap of laps) {
+      const existing = byNumber.get(lap.number);
+      if (existing) existing.Timings.push(...lap.Timings);
+      else byNumber.set(lap.number, { number: lap.number, Timings: [...lap.Timings] });
+    }
+    offset += PAGE;
+    if (laps.length === 0) break;
+  }
+
+  return [...byNumber.values()].sort((a, b) => Number(a.number) - Number(b.number));
+};
 
 /* ---------- Query options ---------- */
 export const seasonsQuery = () =>
