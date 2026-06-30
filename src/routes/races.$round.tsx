@@ -5,6 +5,7 @@ import { Section, ErrorBox, Spinner } from "@/components/ui-bits";
 import { LapChart } from "@/components/LapChart";
 import { BestLapChart } from "@/components/BestLapChart";
 import { TelemetrySection } from "@/components/TelemetrySection";
+import { TrackMap } from "@/components/TrackMap";
 
 export const Route = createFileRoute("/races/$round")({
   validateSearch: (s: Record<string, unknown>) => ({
