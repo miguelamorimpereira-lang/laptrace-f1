@@ -3,36 +3,80 @@ import { queryOptions } from "@tanstack/react-query";
 const BASE = "https://api.openf1.org/v1";
 
 /**
+ * OpenF1 allows ~3 requests/second for anonymous clients. We serialize every
+ * request through a single promise chain with a minimum spacing so parallel
+ * telemetry queries never trip the rate limiter, and we retry on 429.
+ */
+const MIN_INTERVAL = 400; // ms between requests (~2.5 req/s, safely under the cap)
+let chain: Promise<unknown> = Promise.resolve();
+let lastAt = 0;
+
+function schedule<T>(task: () => Promise<T>): Promise<T> {
+  const run = chain.then(async () => {
+    const wait = MIN_INTERVAL - (Date.now() - lastAt);
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    lastAt = Date.now();
+    return task();
+  });
+  // Keep the chain alive even if a task rejects.
+  chain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
  * OpenF1 only has data from 2023 onward, and it blocks global access while a
  * live session is in progress (returns a JSON object instead of an array).
  * Every fetch goes through here so we can surface a clean, typed error.
  */
 async function get<T>(path: string): Promise<T[]> {
-  let res: Response;
-  try {
-    res = await fetch(`${BASE}${path}`);
-  } catch {
-    // OpenF1 drops CORS headers on its error responses, so a live-session
-    // lock surfaces here as a network/CORS failure rather than clean JSON.
-    throw new Error(
-      "OpenF1 telemetry is temporarily unavailable — it gets locked while a live session is running. Try again once the current session has finished.",
-    );
-  }
-  const json = await res.json();
-  if (!Array.isArray(json)) {
-    const detail =
-      json && typeof json === "object" && "detail" in json
-        ? String((json as { detail: unknown }).detail)
-        : null;
-    if (detail && /live/i.test(detail)) {
-      throw new Error(
-        "OpenF1 telemetry is temporarily locked while a live session is running. Try again once the current session has finished.",
-      );
+  return schedule(async () => {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      let res: Response;
+      try {
+        res = await fetch(`${BASE}${path}`);
+      } catch {
+        // OpenF1 drops CORS headers on its error responses, so a live-session
+        // lock surfaces here as a network/CORS failure rather than clean JSON.
+        throw new Error(
+          "OpenF1 telemetry is temporarily unavailable — it gets locked while a live session is running. Try again once the current session has finished.",
+        );
+      }
+
+      if (res.status === 429) {
+        // Back off and retry — spacing widens with each attempt.
+        await sleep(700 * (attempt + 1));
+        continue;
+      }
+
+      const json = await res.json();
+      if (!Array.isArray(json)) {
+        const detail =
+          json && typeof json === "object" && "detail" in json
+            ? String((json as { detail: unknown }).detail)
+            : null;
+        if (detail && /rate limit/i.test(detail)) {
+          await sleep(700 * (attempt + 1));
+          continue;
+        }
+        if (detail && /live/i.test(detail)) {
+          throw new Error(
+            "OpenF1 telemetry is temporarily locked while a live session is running. Try again once the current session has finished.",
+          );
+        }
+        throw new Error(detail ?? "OpenF1 returned an unexpected response.");
+      }
+      if (!res.ok) throw new Error(`OpenF1 API error ${res.status} on ${path}`);
+      return json as T[];
     }
-    throw new Error(detail ?? "OpenF1 returned an unexpected response.");
-  }
-  if (!res.ok) throw new Error(`OpenF1 API error ${res.status} on ${path}`);
-  return json as T[];
+    throw new Error(
+      "OpenF1 is rate-limiting requests right now. Please wait a moment and try again.",
+    );
+  });
 }
 
 /* ---------- Types ---------- */
