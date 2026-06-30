@@ -55,7 +55,7 @@ export function TrackMap({
         <path
           d={d}
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth={18}
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -65,7 +65,7 @@ export function TrackMap({
         <path
           d={d}
           fill="none"
-          stroke="hsl(var(--primary))"
+          stroke="var(--primary)"
           strokeWidth={10}
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -75,8 +75,8 @@ export function TrackMap({
             cx={startX}
             cy={startY}
             r={14}
-            fill="hsl(var(--background))"
-            stroke="hsl(var(--primary))"
+            fill="var(--background)"
+            stroke="var(--primary)"
             strokeWidth={6}
           />
         )}
