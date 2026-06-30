@@ -3,10 +3,17 @@ import { queryOptions } from "@tanstack/react-query";
 const BASE = "https://api.jolpi.ca/ergast/f1";
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) throw new Error(`Jolpica API error ${res.status} on ${path}`);
-  const json = await res.json();
-  return json.MRData as T;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetch(`${BASE}${path}`);
+    if (res.status === 429) {
+      await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      continue;
+    }
+    if (!res.ok) throw new Error(`Jolpica API error ${res.status} on ${path}`);
+    const json = await res.json();
+    return json.MRData as T;
+  }
+  throw new Error(`Jolpica API rate limited on ${path}`);
 }
 
 /* ---------- Types ---------- */
