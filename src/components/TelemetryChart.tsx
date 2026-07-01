@@ -26,6 +26,8 @@ function Channel({
   domain,
   step,
   ticks,
+  onHover,
+  onLeave,
 }: {
   title: string;
   unit: string;
@@ -36,6 +38,8 @@ function Channel({
   domain?: [number, number];
   step?: boolean;
   ticks?: number[];
+  onHover?: (distance: number) => void;
+  onLeave?: () => void;
 }) {
   return (
     <div>
