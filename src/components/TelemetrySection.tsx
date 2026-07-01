@@ -29,10 +29,14 @@ export function TelemetrySection({
   season,
   results,
   raceDate,
+  onHoverDistance,
+  onMaxDistance,
 }: {
   season: string;
   results: RaceResult[];
   raceDate: string;
+  onHoverDistance?: (distance: number | null) => void;
+  onMaxDistance?: (max: number) => void;
 }) {
   const year = Number(season);
 
@@ -46,17 +50,29 @@ export function TelemetrySection({
     );
   }
 
-  return <TelemetryBody results={results} year={year} raceDate={raceDate} />;
+  return (
+    <TelemetryBody
+      results={results}
+      year={year}
+      raceDate={raceDate}
+      onHoverDistance={onHoverDistance}
+      onMaxDistance={onMaxDistance}
+    />
+  );
 }
 
 function TelemetryBody({
   results,
   year,
   raceDate,
+  onHoverDistance,
+  onMaxDistance,
 }: {
   results: RaceResult[];
   year: number;
   raceDate: string;
+  onHoverDistance?: (distance: number | null) => void;
+  onMaxDistance?: (max: number) => void;
 }) {
   const sessionQ = useQuery(raceSessionQuery(year, raceDate));
   const session = sessionQ.data ?? null;
@@ -171,7 +187,15 @@ function TelemetryBody({
       {anyLoading && <Spinner label="Loading telemetry…" />}
 
       {!anyLoading && series.length > 0 ? (
-        <TelemetryChart rows={merged.rows} drivers={series.map((s) => ({ code: s.code, color: s.color }))} />
+        <TelemetryChart
+          rows={merged.rows}
+          drivers={series.map((s) => ({ code: s.code, color: s.color }))}
+          onHover={(d) => {
+            onMaxDistance?.(merged.maxDistance);
+            onHoverDistance?.(d);
+          }}
+          onLeave={() => onHoverDistance?.(null)}
+        />
       ) : (
         !anyLoading &&
         !telemetryError && (

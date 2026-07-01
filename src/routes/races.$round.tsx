@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { seasonsQuery, raceResultsQuery, lapsQuery, constructorColor } from "@/lib/jolpica";
 import { Section, ErrorBox, Spinner } from "@/components/ui-bits";
@@ -45,6 +46,13 @@ function RaceDetail() {
   const { data: race } = useSuspenseQuery(raceResultsQuery(season, round));
   const { data: laps } = useSuspenseQuery(lapsQuery(season, round));
 
+  const [hoverDistance, setHoverDistance] = useState<number | null>(null);
+  const [maxDistance, setMaxDistance] = useState(0);
+  const positionFraction =
+    hoverDistance != null && maxDistance > 0
+      ? Math.min(1, Math.max(0, hoverDistance / maxDistance))
+      : null;
+
   if (!race || !race.Results) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-8">
@@ -69,7 +77,7 @@ function RaceDetail() {
         <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">{race.raceName}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Round {race.round} · {race.Circuit.circuitName}, {race.Circuit.Location.country} ·{" "}
-          {new Date(race.date).toLocaleDateString(undefined, {
+          {new Date(race.date).toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "long",
             year: "numeric",
@@ -93,7 +101,13 @@ function RaceDetail() {
           </Section>
 
           <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear">
-            <TelemetrySection season={season} results={results} raceDate={race.date} />
+            <TelemetrySection
+              season={season}
+              results={results}
+              raceDate={race.date}
+              onHoverDistance={setHoverDistance}
+              onMaxDistance={setMaxDistance}
+            />
           </Section>
 
           <Section title="Race Classification">
@@ -150,6 +164,9 @@ function RaceDetail() {
               lat={race.Circuit.Location.lat}
               long={race.Circuit.Location.long}
               circuitName={race.Circuit.circuitName}
+              positionFraction={positionFraction}
+              hoverDistance={hoverDistance}
+              maxDistance={maxDistance}
             />
           </Section>
         </aside>
