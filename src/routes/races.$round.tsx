@@ -46,6 +46,13 @@ function RaceDetail() {
   const { data: race } = useSuspenseQuery(raceResultsQuery(season, round));
   const { data: laps } = useSuspenseQuery(lapsQuery(season, round));
 
+  const [hoverDistance, setHoverDistance] = useState<number | null>(null);
+  const [maxDistance, setMaxDistance] = useState(0);
+  const positionFraction =
+    hoverDistance != null && maxDistance > 0
+      ? Math.min(1, Math.max(0, hoverDistance / maxDistance))
+      : null;
+
   if (!race || !race.Results) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-8">
