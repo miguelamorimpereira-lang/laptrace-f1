@@ -101,7 +101,13 @@ function RaceDetail() {
           </Section>
 
           <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear">
-            <TelemetrySection season={season} results={results} raceDate={race.date} />
+            <TelemetrySection
+              season={season}
+              results={results}
+              raceDate={race.date}
+              onHoverDistance={setHoverDistance}
+              onMaxDistance={setMaxDistance}
+            />
           </Section>
 
           <Section title="Race Classification">
