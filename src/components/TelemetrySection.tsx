@@ -187,7 +187,15 @@ function TelemetryBody({
       {anyLoading && <Spinner label="Loading telemetry…" />}
 
       {!anyLoading && series.length > 0 ? (
-        <TelemetryChart rows={merged.rows} drivers={series.map((s) => ({ code: s.code, color: s.color }))} />
+        <TelemetryChart
+          rows={merged.rows}
+          drivers={series.map((s) => ({ code: s.code, color: s.color }))}
+          onHover={(d) => {
+            onMaxDistance?.(merged.maxDistance);
+            onHoverDistance?.(d);
+          }}
+          onLeave={() => onHoverDistance?.(null)}
+        />
       ) : (
         !anyLoading &&
         !telemetryError && (
