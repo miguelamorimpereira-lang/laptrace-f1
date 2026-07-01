@@ -47,7 +47,15 @@ function Channel({
         {title} <span className="text-muted-foreground/60">{unit}</span>
       </p>
       <ResponsiveContainer width="100%" height={height}>
-        <LineChart data={rows} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
+        <LineChart
+          data={rows}
+          margin={{ top: 4, right: 12, bottom: 0, left: 0 }}
+          onMouseMove={(s: { activeLabel?: string | number }) => {
+            if (onHover && s && s.activeLabel != null)
+              onHover(Number(s.activeLabel));
+          }}
+          onMouseLeave={() => onLeave?.()}
+        >
           <CartesianGrid stroke={GRID} strokeDasharray="3 3" />
           <XAxis
             dataKey="distance"
