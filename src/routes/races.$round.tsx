@@ -77,7 +77,7 @@ function RaceDetail() {
         <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">{race.raceName}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Round {race.round} · {race.Circuit.circuitName}, {race.Circuit.Location.country} ·{" "}
-          {new Date(race.date).toLocaleDateString(undefined, {
+          {new Date(race.date).toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "long",
             year: "numeric",
