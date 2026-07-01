@@ -98,7 +98,7 @@ function RaceDetail() {
         <BestLapChart laps={laps} results={results} />
       </Section>
 
-      <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear · DRS">
+      <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear">
         <TelemetrySection season={season} results={results} raceDate={race.date} />
       </Section>
 
