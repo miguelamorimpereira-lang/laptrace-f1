@@ -115,16 +115,21 @@ function key(title: string): string {
 export function TelemetryChart({
   rows,
   drivers,
+  onHover,
+  onLeave,
 }: {
   rows: Record<string, number | null>[];
   drivers: ChartDriver[];
+  onHover?: (distance: number) => void;
+  onLeave?: () => void;
 }) {
+  const hover = { onHover, onLeave };
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4">
-      <Channel title="Speed" unit="km/h" suffix=" km/h" rows={rows} drivers={drivers} height={200} />
-      <Channel title="Throttle" unit="%" suffix="%" rows={rows} drivers={drivers} height={120} domain={[0, 100]} ticks={[0, 50, 100]} />
-      <Channel title="Brake" unit="on/off" suffix="%" rows={rows} drivers={drivers} height={90} domain={[0, 100]} ticks={[0, 100]} step />
-      <Channel title="Gear" unit="n" suffix="" rows={rows} drivers={drivers} height={120} domain={[0, 8]} ticks={[1, 3, 5, 7]} step />
+      <Channel title="Speed" unit="km/h" suffix=" km/h" rows={rows} drivers={drivers} height={200} {...hover} />
+      <Channel title="Throttle" unit="%" suffix="%" rows={rows} drivers={drivers} height={120} domain={[0, 100]} ticks={[0, 50, 100]} {...hover} />
+      <Channel title="Brake" unit="on/off" suffix="%" rows={rows} drivers={drivers} height={90} domain={[0, 100]} ticks={[0, 100]} step {...hover} />
+      <Channel title="Gear" unit="n" suffix="" rows={rows} drivers={drivers} height={120} domain={[0, 8]} ticks={[1, 3, 5, 7]} step {...hover} />
       <p className="px-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">
         Distance (km) →
       </p>
