@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import type { RaceResult } from "@/lib/jolpica";
 import { constructorColor } from "@/lib/jolpica";
