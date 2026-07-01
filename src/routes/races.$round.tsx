@@ -164,6 +164,9 @@ function RaceDetail() {
               lat={race.Circuit.Location.lat}
               long={race.Circuit.Location.long}
               circuitName={race.Circuit.circuitName}
+              positionFraction={positionFraction}
+              hoverDistance={hoverDistance}
+              maxDistance={maxDistance}
             />
           </Section>
         </aside>
