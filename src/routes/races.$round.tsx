@@ -82,73 +82,78 @@ function RaceDetail() {
         )}
       </div>
 
-      <Section title="Circuit Layout">
-        <TrackMap
-          lat={race.Circuit.Location.lat}
-          long={race.Circuit.Location.long}
-          circuitName={race.Circuit.circuitName}
-        />
-      </Section>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_280px] lg:items-start">
+        <div className="space-y-8">
+          <Section title="Lap Times — All Laps">
+            <LapChart laps={laps} results={results} />
+          </Section>
 
-      <Section title="Lap Times — All Laps">
-        <LapChart laps={laps} results={results} />
-      </Section>
+          <Section title="Fastest Lap per Driver — Gap to Best">
+            <BestLapChart laps={laps} results={results} />
+          </Section>
 
-      <Section title="Fastest Lap per Driver — Gap to Best">
-        <BestLapChart laps={laps} results={results} />
-      </Section>
+          <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear">
+            <TelemetrySection season={season} results={results} raceDate={race.date} />
+          </Section>
 
-      <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear">
-        <TelemetrySection season={season} results={results} raceDate={race.date} />
-      </Section>
-
-
-      <Section title="Race Classification">
-        <div className="overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border bg-secondary/50">
-              <tr className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Pos</th>
-                <th className="px-4 py-3 font-medium">Driver</th>
-                <th className="hidden px-4 py-3 font-medium md:table-cell">Team</th>
-                <th className="px-4 py-3 text-center font-medium">Grid</th>
-                <th className="px-4 py-3 font-medium">Time / Status</th>
-                <th className="px-4 py-3 text-right font-medium">Pts</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {results.map((r) => (
-                <tr key={r.Driver.driverId} className="transition-colors hover:bg-secondary/40">
-                  <td className="px-4 py-3 font-mono text-muted-foreground">
-                    {r.positionText.padStart(2, "0")}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="h-5 w-1 rounded-full"
-                        style={{ backgroundColor: constructorColor(r.Constructor.constructorId) }}
-                      />
-                      <span className="font-medium">
-                        {r.Driver.givenName} {r.Driver.familyName}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                    {r.Constructor.name}
-                  </td>
-                  <td className="px-4 py-3 text-center font-mono text-muted-foreground">
-                    {r.grid}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs">
-                    {r.Time?.time ?? r.status}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold">{r.points}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Section title="Race Classification">
+            <div className="overflow-x-auto rounded-xl border border-border bg-card">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border bg-secondary/50">
+                  <tr className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <th className="px-4 py-3 font-medium">Pos</th>
+                    <th className="px-4 py-3 font-medium">Driver</th>
+                    <th className="hidden px-4 py-3 font-medium md:table-cell">Team</th>
+                    <th className="px-4 py-3 text-center font-medium">Grid</th>
+                    <th className="px-4 py-3 font-medium">Time / Status</th>
+                    <th className="px-4 py-3 text-right font-medium">Pts</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {results.map((r) => (
+                    <tr key={r.Driver.driverId} className="transition-colors hover:bg-secondary/40">
+                      <td className="px-4 py-3 font-mono text-muted-foreground">
+                        {r.positionText.padStart(2, "0")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="h-5 w-1 rounded-full"
+                            style={{ backgroundColor: constructorColor(r.Constructor.constructorId) }}
+                          />
+                          <span className="font-medium">
+                            {r.Driver.givenName} {r.Driver.familyName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
+                        {r.Constructor.name}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-muted-foreground">
+                        {r.grid}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs">
+                        {r.Time?.time ?? r.status}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono font-semibold">{r.points}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Section>
         </div>
-      </Section>
+
+        <aside className="space-y-8 lg:sticky lg:top-8">
+          <Section title="Circuit Layout">
+            <TrackMap
+              lat={race.Circuit.Location.lat}
+              long={race.Circuit.Location.long}
+              circuitName={race.Circuit.circuitName}
+            />
+          </Section>
+        </aside>
+      </div>
     </main>
   );
 }

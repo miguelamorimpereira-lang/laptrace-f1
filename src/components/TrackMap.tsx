@@ -44,10 +44,10 @@ export function TrackMap({
   const startY = firstMatch ? Number(firstMatch[2]) : 0;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+    <div className="rounded-xl border border-border bg-card p-3">
       <svg
         viewBox={`0 0 ${path.width} ${path.height}`}
-        className="mx-auto block h-auto w-full max-w-lg"
+        className="mx-auto block h-auto w-full max-w-xs"
         role="img"
         aria-label={`${circuitName} track layout`}
       >
