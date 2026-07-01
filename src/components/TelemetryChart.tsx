@@ -113,7 +113,6 @@ export function TelemetryChart({
       <Channel title="Throttle" unit="%" suffix="%" rows={rows} drivers={drivers} height={120} domain={[0, 100]} ticks={[0, 50, 100]} />
       <Channel title="Brake" unit="on/off" suffix="%" rows={rows} drivers={drivers} height={90} domain={[0, 100]} ticks={[0, 100]} step />
       <Channel title="Gear" unit="n" suffix="" rows={rows} drivers={drivers} height={120} domain={[0, 8]} ticks={[1, 3, 5, 7]} step />
-      <Channel title="DRS" unit="open" suffix="" rows={rows} drivers={drivers} height={80} domain={[0, 1]} ticks={[0, 1]} step />
       <p className="px-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">
         Distance (km) →
       </p>
