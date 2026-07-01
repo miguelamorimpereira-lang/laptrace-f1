@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { seasonsQuery, raceResultsQuery, lapsQuery, constructorColor } from "@/lib/jolpica";
 import { Section, ErrorBox, Spinner } from "@/components/ui-bits";
