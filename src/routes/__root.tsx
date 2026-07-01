@@ -88,8 +88,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lap Trace Formula 1 - Data Visualization" },
       { name: "twitter:description", content: "LapTrace F1 is a web application for visualizing Formula 1 racing data, telemetry and performance of each driver, car and team in Formula 1." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7b11d2ae-11c5-4460-830e-494e632fbba9/id-preview-7dc7fed1--9bb5092d-a159-4453-ab60-e04513de39b1.lovable.app-1782556992043.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7b11d2ae-11c5-4460-830e-494e632fbba9/id-preview-7dc7fed1--9bb5092d-a159-4453-ab60-e04513de39b1.lovable.app-1782556992043.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/HBPPE2BWuqZkMWPCVjZDpfks6Bm2/social-images/social-1782919135313-Gemini_Generated_Image_azrfyoazrfyoazrf.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/HBPPE2BWuqZkMWPCVjZDpfks6Bm2/social-images/social-1782919135313-Gemini_Generated_Image_azrfyoazrfyoazrf.webp" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
