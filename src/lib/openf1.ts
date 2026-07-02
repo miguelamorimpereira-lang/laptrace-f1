@@ -304,6 +304,42 @@ export const raceSessionQuery = (year: number, raceDate: string) =>
     retry: false,
   });
 
+export const weekendSessionsQuery = (year: number, raceDate: string) =>
+  queryOptions({
+    queryKey: ["of1-weekend", year, raceDate],
+    queryFn: () => getWeekendSessionKinds(year, raceDate),
+    staleTime: 24 * HOUR,
+    retry: false,
+  });
+
+/** Telemetry for the lap matching a specific target time (Q1/Q2/Q3 segments). */
+export const segmentTelemetryQuery = (
+  sessionKey: number | undefined,
+  driverNumber: number | undefined,
+  targetSeconds: number | undefined,
+) =>
+  queryOptions({
+    queryKey: ["of1-segment-telemetry", sessionKey, driverNumber, targetSeconds],
+    queryFn: async () => {
+      const lap = await getLapByDuration(
+        sessionKey as number,
+        driverNumber as number,
+        targetSeconds as number,
+      );
+      if (!lap) return { lap: null, samples: [] as TelemetrySample[] };
+      const samples = await getLapTelemetry(
+        sessionKey as number,
+        driverNumber as number,
+        lap,
+      );
+      return { lap, samples };
+    },
+    enabled:
+      sessionKey != null && driverNumber != null && targetSeconds != null,
+    staleTime: 24 * HOUR,
+    retry: false,
+  });
+
 export const sessionDriversQuery = (sessionKey: number | undefined) =>
   queryOptions({
     queryKey: ["of1-drivers", sessionKey],
