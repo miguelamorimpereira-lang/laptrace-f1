@@ -116,6 +116,16 @@ export const getRaceResults = (season: string, round: string) =>
     (d) => d.RaceTable.Races[0] ?? null,
   );
 
+export const getQualifyingResults = (season: string, round: string) =>
+  get<{ RaceTable: { Races: Race[] } }>(
+    `/${season}/${round}/qualifying/?limit=100`,
+  ).then((d) => d.RaceTable.Races[0] ?? null);
+
+export const getSprintResults = (season: string, round: string) =>
+  get<{ RaceTable: { Races: Race[] } }>(`/${season}/${round}/sprint/?limit=100`).then(
+    (d) => d.RaceTable.Races[0] ?? null,
+  );
+
 /**
  * Jolpica caps `limit` at 100 timing rows per request, so a single call only
  * returns ~5 laps. Page through every timing row and merge them by lap number.
