@@ -56,6 +56,17 @@ export interface Race {
   time?: string;
   Circuit: Circuit;
   Results?: RaceResult[];
+  QualifyingResults?: QualifyingResult[];
+  SprintResults?: RaceResult[];
+}
+export interface QualifyingResult {
+  position: string;
+  number: string;
+  Driver: Driver;
+  Constructor: Constructor;
+  Q1?: string;
+  Q2?: string;
+  Q3?: string;
 }
 export interface RaceResult {
   position: string;
