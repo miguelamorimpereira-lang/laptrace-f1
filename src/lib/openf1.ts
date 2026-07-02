@@ -130,16 +130,15 @@ export const OPENF1_MIN_SEASON = 2023;
 
 /* ---------- Fetchers ---------- */
 
-/** Find the Race session whose calendar date best matches the Jolpica race date. */
-async function resolveRaceSession(
+/** All OpenF1 sessions belonging to the same meeting (weekend) as `raceDate`. */
+async function getWeekendSessions(
   year: number,
   raceDate: string,
-): Promise<OF1Session | null> {
-  const sessions = await get<OF1Session>(
-    `/sessions?year=${year}&session_name=Race`,
-  );
-  if (sessions.length === 0) return null;
+): Promise<OF1Session[]> {
+  const sessions = await get<OF1Session>(`/sessions?year=${year}`);
+  if (sessions.length === 0) return [];
   const target = new Date(`${raceDate}T12:00:00Z`).getTime();
+  // Find the session closest to the race date, then take its whole meeting.
   let best = sessions[0];
   let bestDiff = Infinity;
   for (const s of sessions) {
@@ -149,9 +148,54 @@ async function resolveRaceSession(
       best = s;
     }
   }
-  // Guard against matching a totally different weekend (>3 days off).
-  if (bestDiff > 3 * 24 * 60 * 60 * 1000) return null;
-  return best;
+  if (bestDiff > 4 * 24 * 60 * 60 * 1000) return [];
+  return sessions.filter((s) => s.meeting_key === best.meeting_key);
+}
+
+/** Session names we surface as tabs, in weekend order. */
+export type SessionKind = "race" | "qualifying" | "sprint" | "sprint-qualifying";
+
+const KIND_MATCHERS: Record<SessionKind, (name: string) => boolean> = {
+  race: (n) => n === "Race",
+  qualifying: (n) => n === "Qualifying",
+  sprint: (n) => n === "Sprint",
+  "sprint-qualifying": (n) =>
+    n === "Sprint Qualifying" || n === "Sprint Shootout",
+};
+
+export interface WeekendSessions {
+  kinds: SessionKind[];
+  byKind: Partial<Record<SessionKind, OF1Session>>;
+}
+
+/** Which session tabs a weekend supports, plus the resolved session per kind. */
+export async function getWeekendSessionKinds(
+  year: number,
+  raceDate: string,
+): Promise<WeekendSessions> {
+  const sessions = await getWeekendSessions(year, raceDate);
+  const order: SessionKind[] = [
+    "race",
+    "qualifying",
+    "sprint",
+    "sprint-qualifying",
+  ];
+  const byKind: Partial<Record<SessionKind, OF1Session>> = {};
+  for (const kind of order) {
+    const match = sessions.find((s) => KIND_MATCHERS[kind](s.session_name));
+    if (match) byKind[kind] = match;
+  }
+  const kinds = order.filter((k) => byKind[k]);
+  return { kinds, byKind };
+}
+
+/** Find the Race session whose calendar date best matches the Jolpica race date. */
+async function resolveRaceSession(
+  year: number,
+  raceDate: string,
+): Promise<OF1Session | null> {
+  const { byKind } = await getWeekendSessionKinds(year, raceDate);
+  return byKind.race ?? null;
 }
 
 export const getRaceSession = (year: number, raceDate: string) =>
