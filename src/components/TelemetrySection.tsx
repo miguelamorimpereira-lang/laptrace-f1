@@ -1,14 +1,12 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import type { RaceResult } from "@/lib/jolpica";
-import { constructorColor } from "@/lib/jolpica";
 import {
-  OPENF1_MIN_SEASON,
-  raceSessionQuery,
   sessionDriversQuery,
   lapTelemetryQuery,
+  segmentTelemetryQuery,
   mergeTelemetry,
   formatLapTime,
+  type OF1Session,
   type TelemetryDriverSeries,
 } from "@/lib/openf1";
 import { DriverChips, type ChipDriver } from "@/components/DriverChips";
@@ -16,6 +14,17 @@ import { TelemetryChart } from "@/components/TelemetryChart";
 import { Spinner } from "@/components/ui-bits";
 
 const MAX = 3;
+
+/** One selectable driver, mapped from Jolpica results to be matched to OpenF1. */
+export interface TelemetryEntry {
+  driverId: string;
+  code?: string;
+  familyName: string;
+  givenName: string;
+  color: string;
+  /** Target lap time in seconds (Q1/Q2/Q3). Omit to use the session's fastest lap. */
+  targetSeconds?: number;
+}
 
 function Note({ children }: { children: React.ReactNode }) {
   return (
@@ -26,116 +35,90 @@ function Note({ children }: { children: React.ReactNode }) {
 }
 
 export function TelemetrySection({
-  season,
-  results,
-  raceDate,
+  session,
+  sessionError,
+  sessionLoading,
+  entries,
+  emptyNote,
   onHoverDistance,
   onMaxDistance,
 }: {
-  season: string;
-  results: RaceResult[];
-  raceDate: string;
+  session: OF1Session | null | undefined;
+  sessionError?: Error | null;
+  sessionLoading?: boolean;
+  entries: TelemetryEntry[];
+  emptyNote?: string;
   onHoverDistance?: (distance: number | null) => void;
   onMaxDistance?: (max: number) => void;
 }) {
-  const year = Number(season);
-
-  if (year < OPENF1_MIN_SEASON) {
-    return (
-      <Note>
-        In-car telemetry (speed, throttle, brake, gear) is only available from{" "}
-        {OPENF1_MIN_SEASON} onward. Pick a {OPENF1_MIN_SEASON}+ race to compare
-        fastest-lap traces.
-      </Note>
-    );
-  }
-
-  return (
-    <TelemetryBody
-      results={results}
-      year={year}
-      raceDate={raceDate}
-      onHoverDistance={onHoverDistance}
-      onMaxDistance={onMaxDistance}
-    />
-  );
-}
-
-function TelemetryBody({
-  results,
-  year,
-  raceDate,
-  onHoverDistance,
-  onMaxDistance,
-}: {
-  results: RaceResult[];
-  year: number;
-  raceDate: string;
-  onHoverDistance?: (distance: number | null) => void;
-  onMaxDistance?: (max: number) => void;
-}) {
-  const sessionQ = useQuery(raceSessionQuery(year, raceDate));
-  const session = sessionQ.data ?? null;
   const driversQ = useQuery(sessionDriversQuery(session?.session_key));
 
-  // Map Jolpica finishers to OpenF1 driver numbers (by 3-letter code, then surname).
-  const drivers: ChipDriver[] = useMemo(() => {
+  // Map Jolpica entries to OpenF1 driver numbers (by 3-letter code, then surname).
+  const drivers: (ChipDriver & { targetSeconds?: number })[] = useMemo(() => {
     const of1 = driversQ.data ?? [];
     const byCode = new Map(of1.map((d) => [d.name_acronym?.toUpperCase(), d]));
     const bySurname = new Map(of1.map((d) => [d.last_name?.toLowerCase(), d]));
-    const out: ChipDriver[] = [];
-    for (const r of results) {
-      const code = r.Driver.code?.toUpperCase();
+    const out: (ChipDriver & { targetSeconds?: number })[] = [];
+    for (const e of entries) {
+      const code = e.code?.toUpperCase();
       const match =
-        (code && byCode.get(code)) ||
-        bySurname.get(r.Driver.familyName.toLowerCase());
+        (code && byCode.get(code)) || bySurname.get(e.familyName.toLowerCase());
       if (!match) continue;
       out.push({
         id: String(match.driver_number),
         code: code ?? match.name_acronym,
-        color: constructorColor(r.Constructor.constructorId),
-        name: `${r.Driver.givenName} ${r.Driver.familyName}`,
+        color: e.color,
+        name: `${e.givenName} ${e.familyName}`,
+        targetSeconds: e.targetSeconds,
       });
     }
     return out;
-  }, [driversQ.data, results]);
+  }, [driversQ.data, entries]);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  // Initialise to the top 2 finishers once the driver list is known.
+  // Reset selection when the driver list identity changes across sessions.
+  const [signature, setSignature] = useState<string>("");
+  const currentSig = drivers.map((d) => d.id).join(",");
+  if (currentSig !== signature) {
+    setSignature(currentSig);
+    setSelected(new Set());
+  }
+
   const effective =
     selected.size === 0 && drivers.length
       ? new Set(drivers.slice(0, 2).map((d) => d.id))
       : selected;
 
   const toggle = (id: string) =>
-    setSelected((_prev) => {
+    setSelected(() => {
       const next = new Set(effective);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
 
   const activeIds = [...effective];
+  const byId = new Map(drivers.map((d) => [d.id, d] as const));
+
   const telemetryQs = useQueries({
-    queries: activeIds.map((id) =>
-      lapTelemetryQuery(session?.session_key, Number(id)),
-    ),
+    queries: activeIds.map((id) => {
+      const meta = byId.get(id);
+      return meta?.targetSeconds != null
+        ? segmentTelemetryQuery(session?.session_key, Number(id), meta.targetSeconds)
+        : lapTelemetryQuery(session?.session_key, Number(id));
+    }),
   });
 
-  // Error from session/drivers lookup (e.g. live-session lock).
-  const fatal = sessionQ.error ?? driversQ.error;
-  if (fatal) {
-    return <Note>{(fatal as Error).message}</Note>;
-  }
+  const fatal = sessionError ?? driversQ.error;
+  if (fatal) return <Note>{(fatal as Error).message}</Note>;
 
-  if (sessionQ.isLoading || (session && driversQ.isLoading)) {
+  if (sessionLoading || (session && driversQ.isLoading)) {
     return <Spinner label="Loading telemetry…" />;
   }
 
   if (!session) {
-    return <Note>No OpenF1 session could be matched to this race.</Note>;
+    return <Note>{emptyNote ?? "No telemetry session could be matched to this weekend."}</Note>;
   }
 
-  const colorByCode = new Map(drivers.map((d) => [d.id, d] as const));
   const series: TelemetryDriverSeries[] = [];
   let anyLoading = false;
   let telemetryError: string | null = null;
@@ -143,7 +126,7 @@ function TelemetryBody({
     const q = telemetryQs[i];
     if (q.isLoading) anyLoading = true;
     if (q.error) telemetryError = (q.error as Error).message;
-    const meta = colorByCode.get(id);
+    const meta = byId.get(id);
     if (q.data?.samples?.length && meta) {
       series.push({ code: meta.code, color: meta.color, samples: q.data.samples });
     }
@@ -153,7 +136,7 @@ function TelemetryBody({
 
   const lapLabels = activeIds
     .map((id, i) => {
-      const meta = colorByCode.get(id);
+      const meta = byId.get(id);
       const lap = telemetryQs[i].data?.lap;
       if (!meta || !lap?.lap_duration) return null;
       return { code: meta.code, color: meta.color, time: lap.lap_duration };
@@ -162,9 +145,14 @@ function TelemetryBody({
 
   return (
     <div className="space-y-3">
-      <DriverChips drivers={drivers} selected={effective} onToggle={toggle} max={MAX} />
+      <DriverChips
+        drivers={drivers}
+        selected={effective}
+        onToggle={toggle}
+        max={MAX}
+      />
       <p className="font-mono text-[11px] text-muted-foreground">
-        Comparing each driver's fastest lap · pick up to {MAX} drivers.
+        Comparing each driver's best lap · pick up to {MAX} drivers.
       </p>
 
       {lapLabels.length > 0 && (
@@ -183,7 +171,6 @@ function TelemetryBody({
       )}
 
       {telemetryError && <Note>{telemetryError}</Note>}
-
       {anyLoading && <Spinner label="Loading telemetry…" />}
 
       {!anyLoading && series.length > 0 ? (
@@ -201,12 +188,11 @@ function TelemetryBody({
         !telemetryError && (
           <Note>
             {activeIds.length === 0
-              ? "Select drivers above to load their fastest-lap telemetry."
-              : "Telemetry is not available for the selected drivers in this race."}
+              ? "Select drivers above to load their telemetry."
+              : "Telemetry is not available for the selected drivers in this session."}
           </Note>
         )
       )}
     </div>
   );
 }
-
