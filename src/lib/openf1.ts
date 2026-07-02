@@ -221,6 +221,37 @@ export async function getFastestLap(
   );
 }
 
+/**
+ * Find the valid lap whose duration best matches a target time (seconds).
+ * Used to pin a driver's Q1/Q2/Q3 lap (whose time comes from Jolpica) to the
+ * matching lap inside OpenF1's single Qualifying session.
+ */
+export async function getLapByDuration(
+  sessionKey: number,
+  driverNumber: number,
+  targetSeconds: number,
+): Promise<OF1Lap | null> {
+  const laps = await get<OF1Lap>(
+    `/laps?session_key=${sessionKey}&driver_number=${driverNumber}`,
+  );
+  const valid = laps.filter(
+    (l) => l.lap_duration != null && l.date_start != null,
+  );
+  if (valid.length === 0) return null;
+  let best = valid[0];
+  let bestDiff = Infinity;
+  for (const l of valid) {
+    const diff = Math.abs((l.lap_duration as number) - targetSeconds);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = l;
+    }
+  }
+  // If nothing is remotely close, the segment lap isn't in the stream.
+  if (bestDiff > 2) return null;
+  return best;
+}
+
 /** Telemetry samples for one lap, with cumulative distance derived from speed. */
 export async function getLapTelemetry(
   sessionKey: number,
