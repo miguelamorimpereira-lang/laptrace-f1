@@ -187,6 +187,20 @@ export const raceResultsQuery = (season: string, round: string) =>
     staleTime: 60_000,
   });
 
+export const qualifyingQuery = (season: string, round: string) =>
+  queryOptions({
+    queryKey: ["qualifying", season, round],
+    queryFn: () => getQualifyingResults(season, round),
+    staleTime: 60_000,
+  });
+
+export const sprintQuery = (season: string, round: string) =>
+  queryOptions({
+    queryKey: ["sprint", season, round],
+    queryFn: () => getSprintResults(season, round),
+    staleTime: 60_000,
+  });
+
 export const lapsQuery = (season: string, round: string) =>
   queryOptions({
     queryKey: ["laps", season, round],
