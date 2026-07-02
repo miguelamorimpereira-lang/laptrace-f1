@@ -1,40 +1,64 @@
-# Plan: Sync telemetry hover to a track-position marker
+# F1 site: news home + per-session navigation
 
-Make the track layout show *where on the circuit* the mouse currently is when hovering the telemetry charts. As you move across the Speed/Throttle/Brake/Gear traces, a dot moves around the track outline, so you can tell which corner or straight a data point belongs to.
+Restructure the app so users pick **year → race → session (Race / Qualifying / Sprint)** instead of landing on race data directly, add a **latest-news** home page, and add **Q1/Q2/Q3 telemetry** in qualifying.
 
-## How it works (concept)
+## 1. Home page — latest news + race calendar
 
-- Telemetry already has a cumulative `distance` per sample (0 → lap length).
-- The track outline is a polyline of coordinates; walking it gives a distance-along-track for every point.
-- On hover at telemetry distance `d`, compute `fraction = d / maxDistance`, then find the point at that same fraction along the track and draw a marker there.
-- Alignment is by *fraction*, so exact meter-matching isn't required. Start/finish offset and drawing direction are handled as best-effort (see technical notes).
+Rework `src/routes/index.tsx` to lead with news and the calendar (year-selectable):
+- **Latest F1 news** feed: headline, source, time-ago, thumbnail (when present), linking out to the full article in a new tab.
+- **Race calendar** for the selected season (year selector), each round linking into the Grand Prix hub. Upcoming vs finished badges (reuse logic from the current races list).
+- Keep a slim championship-leader strip so the landing still surfaces standings, but news + calendar are the focus.
 
-## User-facing result
+News comes from a server function (RSS has no browser CORS, and XML parsing belongs server-side):
+- New `src/lib/news.functions.ts` → `getLatestNews` (`createServerFn`, GET) fetches the Autosport F1 RSS feed (`https://www.autosport.com/rss/f1/news/`, Motorsport.com as fallback), parses it with `fast-xml-parser`, and returns a clean DTO array (`title`, `link`, `pubDate`, `source`, `image?`). Cached via TanStack Query with a long `staleTime`.
+- Add dependency `fast-xml-parser` (pure JS, Worker-safe).
+- New `src/components/NewsFeed.tsx` renders the list.
 
-- Hovering anywhere on the telemetry chart highlights the matching spot on the circuit map with a pulsing dot.
-- A small readout (e.g. "2.41 km / 4.32 km") near the track confirms position.
-- Moving the mouse off the chart clears the marker.
+## 2. Grand Prix hub with session tabs
 
-## Steps
+Turn `src/routes/races.$round.tsx` into a **Grand Prix hub**. Header stays (GP name, circuit, date, back-to-calendar). Below it, a **session tab bar** driven by a `tab` search param: `race` (default) · `qualifying` · `sprint` · `sprint-qualifying`.
+- Tabs only appear when that session exists for the weekend (Sprint tabs shown only for sprint weekends, detected via the OpenF1 sessions for that meeting).
+- The circuit-layout sticky sidebar + hover-to-marker interaction is kept and shared across all telemetry views.
 
-1. **Shared hover state** — In the race detail page (`races.$round.tsx`), hold a `hoverDistance` / `maxDistance` state and pass a setter into the telemetry section and the current distance into the track map. This connects the two sections that already sit side-by-side in the grid.
+### Race tab
+Exactly today's content: all-laps chart, fastest-lap-per-driver, fastest-lap telemetry, classification table.
 
-2. **Report hover from the chart** — In `TelemetryChart.tsx`, use Recharts' `onMouseMove` / `onMouseLeave` on the chart to read the active `distance` value and call the setter. All channels share the same X (distance), so one handler on the top chart is enough.
+### Qualifying tab
+- **Q1 / Q2 / Q3 sub-selector.**
+- For the chosen segment, show **best-lap telemetry per driver** (speed · throttle · brake · gear), same overlay chart as race, plus each driver's lap time.
+- Data join: Jolpica `/qualifying` gives each driver's Q1/Q2/Q3 lap *time*; OpenF1's single Qualifying session gives the telemetry. For each selected driver we find the OpenF1 lap whose `lap_duration` best matches that driver's Jolpica Q-segment time, then pull that lap's telemetry. This yields genuinely segment-specific traces.
+- Driver chips let the user pick up to 3 drivers to compare (reusing the existing selection UI).
 
-3. **Arc-length lookup on the track** — In `circuits.ts`, add a helper that, given a matched circuit feature and a fraction (0–1), returns the projected SVG `{x, y}` at that fraction of total track length (cumulative haversine along the polyline, mapped through the same projection as `buildTrackPath`).
+### Sprint tab (sprint weekends only)
+- Sprint race results + lap charts + fastest-lap telemetry, reusing the race components against the OpenF1 Sprint session and Jolpica `/sprint` results.
 
-4. **Marker on the map** — In `TrackMap.tsx`, accept an optional `positionFraction` and render a highlighted dot at the computed point (plus keep the existing start/finish marker). Add the small distance readout.
+### Sprint Qualifying / Shootout tab (when present)
+- Best-lap telemetry per driver for the Sprint Qualifying session. Ergast/Jolpica has no SQ1/SQ2/SQ3 split, so this shows each driver's overall fastest lap in that session (no sub-segments) with a short note.
 
-5. **Wire max distance** — Surface `maxDistance` from the merged telemetry up to the page so the fraction can be computed.
+## 3. Data layer additions
 
-## Technical notes
+`src/lib/jolpica.ts`:
+- `getQualifyingResults(season, round)` + `qualifyingQuery` — returns per-driver `Q1/Q2/Q3` strings (parsed to seconds with the existing `lapTimeToSeconds`).
+- `getSprintResults(season, round)` + `sprintQuery` — `/sprint` endpoint, same shape as race results.
 
-- **Direction/orientation**: The GeoJSON polyline may be digitized opposite to driving direction. I'll add a simple heuristic (and if needed a per-map flip) so the dot travels the right way; this can be refined after a visual check.
-- **Start/finish offset**: The polyline's first point is assumed ≈ start/finish. If it's visibly off, we can add a per-circuit offset later; not part of this pass.
-- **No new data sources or backend** — purely frontend wiring over data we already fetch. No changes to Jolpica/OpenF1 fetching.
-- **Scope**: telemetry section only exists for 2023+ races, so the marker only activates there; older races keep the static track map.
+`src/lib/openf1.ts`:
+- Generalize session resolution: `resolveSession(year, raceDate, sessionName)` matching by date to the GP weekend (works for `Race`, `Qualifying`, `Sprint`, `Sprint Qualifying`/`Sprint Shootout`). Keep `getRaceSession` as a thin wrapper.
+- `listWeekendSessions(year, raceDate)` so the hub knows which tabs to show.
+- `getLapByDuration(sessionKey, driverNumber, targetSeconds)` — pick the valid lap closest to a target time (for Q-segment matching); reuse `getLapTelemetry`.
+- New query option `segmentTelemetryQuery(sessionKey, driverNumber, targetSeconds)`.
 
-## Out of scope
+## 4. Telemetry component refactor
 
-- Perfect metre-accurate start/finish calibration per circuit.
-- Corner names/labels on the track (could be a later enhancement).
+Generalize the current `TelemetrySection` into a reusable telemetry view that accepts a resolved **session** and an optional **per-driver target lap time** (used by qualifying segments; omitted for race/sprint where "fastest lap" is used). The existing rate-limited OpenF1 request queue, driver mapping, merge, and hover-distance wiring are preserved. The race tab keeps its current behavior; qualifying/sprint reuse the same component with different inputs.
+
+## Technical notes / caveats
+- Telemetry (all sessions) remains **2023+** only via OpenF1; pre-2023 races show lap-time charts + results but a clear "telemetry unavailable" note.
+- Q1/Q2/Q3 telemetry relies on **duration matching** between Jolpica times and OpenF1 laps — robust in practice since each driver's Q times are distinct, with a small tolerance guard.
+- No steering channel (not published by any free source), consistent with the current build.
+- OpenF1's live-session lockout handling and the existing throttling/back-off are unchanged.
+- News is read-only and server-fetched; no secrets or database required.
+
+## Files
+- Edit: `src/routes/index.tsx`, `src/routes/races.$round.tsx`, `src/lib/jolpica.ts`, `src/lib/openf1.ts`, `src/components/TelemetrySection.tsx`.
+- Add: `src/lib/news.functions.ts`, `src/components/NewsFeed.tsx`, a `SessionTabs` control, and a qualifying segment selector (small components).
+- Dependency: `fast-xml-parser`.

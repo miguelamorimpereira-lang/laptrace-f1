@@ -130,16 +130,15 @@ export const OPENF1_MIN_SEASON = 2023;
 
 /* ---------- Fetchers ---------- */
 
-/** Find the Race session whose calendar date best matches the Jolpica race date. */
-async function resolveRaceSession(
+/** All OpenF1 sessions belonging to the same meeting (weekend) as `raceDate`. */
+async function getWeekendSessions(
   year: number,
   raceDate: string,
-): Promise<OF1Session | null> {
-  const sessions = await get<OF1Session>(
-    `/sessions?year=${year}&session_name=Race`,
-  );
-  if (sessions.length === 0) return null;
+): Promise<OF1Session[]> {
+  const sessions = await get<OF1Session>(`/sessions?year=${year}`);
+  if (sessions.length === 0) return [];
   const target = new Date(`${raceDate}T12:00:00Z`).getTime();
+  // Find the session closest to the race date, then take its whole meeting.
   let best = sessions[0];
   let bestDiff = Infinity;
   for (const s of sessions) {
@@ -149,9 +148,54 @@ async function resolveRaceSession(
       best = s;
     }
   }
-  // Guard against matching a totally different weekend (>3 days off).
-  if (bestDiff > 3 * 24 * 60 * 60 * 1000) return null;
-  return best;
+  if (bestDiff > 4 * 24 * 60 * 60 * 1000) return [];
+  return sessions.filter((s) => s.meeting_key === best.meeting_key);
+}
+
+/** Session names we surface as tabs, in weekend order. */
+export type SessionKind = "race" | "qualifying" | "sprint" | "sprint-qualifying";
+
+const KIND_MATCHERS: Record<SessionKind, (name: string) => boolean> = {
+  race: (n) => n === "Race",
+  qualifying: (n) => n === "Qualifying",
+  sprint: (n) => n === "Sprint",
+  "sprint-qualifying": (n) =>
+    n === "Sprint Qualifying" || n === "Sprint Shootout",
+};
+
+export interface WeekendSessions {
+  kinds: SessionKind[];
+  byKind: Partial<Record<SessionKind, OF1Session>>;
+}
+
+/** Which session tabs a weekend supports, plus the resolved session per kind. */
+export async function getWeekendSessionKinds(
+  year: number,
+  raceDate: string,
+): Promise<WeekendSessions> {
+  const sessions = await getWeekendSessions(year, raceDate);
+  const order: SessionKind[] = [
+    "race",
+    "qualifying",
+    "sprint",
+    "sprint-qualifying",
+  ];
+  const byKind: Partial<Record<SessionKind, OF1Session>> = {};
+  for (const kind of order) {
+    const match = sessions.find((s) => KIND_MATCHERS[kind](s.session_name));
+    if (match) byKind[kind] = match;
+  }
+  const kinds = order.filter((k) => byKind[k]);
+  return { kinds, byKind };
+}
+
+/** Find the Race session whose calendar date best matches the Jolpica race date. */
+async function resolveRaceSession(
+  year: number,
+  raceDate: string,
+): Promise<OF1Session | null> {
+  const { byKind } = await getWeekendSessionKinds(year, raceDate);
+  return byKind.race ?? null;
 }
 
 export const getRaceSession = (year: number, raceDate: string) =>
@@ -175,6 +219,37 @@ export async function getFastestLap(
   return valid.reduce((a, b) =>
     (a.lap_duration as number) <= (b.lap_duration as number) ? a : b,
   );
+}
+
+/**
+ * Find the valid lap whose duration best matches a target time (seconds).
+ * Used to pin a driver's Q1/Q2/Q3 lap (whose time comes from Jolpica) to the
+ * matching lap inside OpenF1's single Qualifying session.
+ */
+export async function getLapByDuration(
+  sessionKey: number,
+  driverNumber: number,
+  targetSeconds: number,
+): Promise<OF1Lap | null> {
+  const laps = await get<OF1Lap>(
+    `/laps?session_key=${sessionKey}&driver_number=${driverNumber}`,
+  );
+  const valid = laps.filter(
+    (l) => l.lap_duration != null && l.date_start != null,
+  );
+  if (valid.length === 0) return null;
+  let best = valid[0];
+  let bestDiff = Infinity;
+  for (const l of valid) {
+    const diff = Math.abs((l.lap_duration as number) - targetSeconds);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = l;
+    }
+  }
+  // If nothing is remotely close, the segment lap isn't in the stream.
+  if (bestDiff > 2) return null;
+  return best;
 }
 
 /** Telemetry samples for one lap, with cumulative distance derived from speed. */
@@ -225,6 +300,42 @@ export const raceSessionQuery = (year: number, raceDate: string) =>
   queryOptions({
     queryKey: ["of1-session", year, raceDate],
     queryFn: () => getRaceSession(year, raceDate),
+    staleTime: 24 * HOUR,
+    retry: false,
+  });
+
+export const weekendSessionsQuery = (year: number, raceDate: string) =>
+  queryOptions({
+    queryKey: ["of1-weekend", year, raceDate],
+    queryFn: () => getWeekendSessionKinds(year, raceDate),
+    staleTime: 24 * HOUR,
+    retry: false,
+  });
+
+/** Telemetry for the lap matching a specific target time (Q1/Q2/Q3 segments). */
+export const segmentTelemetryQuery = (
+  sessionKey: number | undefined,
+  driverNumber: number | undefined,
+  targetSeconds: number | undefined,
+) =>
+  queryOptions({
+    queryKey: ["of1-segment-telemetry", sessionKey, driverNumber, targetSeconds],
+    queryFn: async () => {
+      const lap = await getLapByDuration(
+        sessionKey as number,
+        driverNumber as number,
+        targetSeconds as number,
+      );
+      if (!lap) return { lap: null, samples: [] as TelemetrySample[] };
+      const samples = await getLapTelemetry(
+        sessionKey as number,
+        driverNumber as number,
+        lap,
+      );
+      return { lap, samples };
+    },
+    enabled:
+      sessionKey != null && driverNumber != null && targetSeconds != null,
     staleTime: 24 * HOUR,
     retry: false,
   });

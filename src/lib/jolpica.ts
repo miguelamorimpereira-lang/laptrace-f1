@@ -56,6 +56,17 @@ export interface Race {
   time?: string;
   Circuit: Circuit;
   Results?: RaceResult[];
+  QualifyingResults?: QualifyingResult[];
+  SprintResults?: RaceResult[];
+}
+export interface QualifyingResult {
+  position: string;
+  number: string;
+  Driver: Driver;
+  Constructor: Constructor;
+  Q1?: string;
+  Q2?: string;
+  Q3?: string;
 }
 export interface RaceResult {
   position: string;
@@ -102,6 +113,16 @@ export const getRaces = (season: string) =>
 
 export const getRaceResults = (season: string, round: string) =>
   get<{ RaceTable: { Races: Race[] } }>(`/${season}/${round}/results/?limit=50`).then(
+    (d) => d.RaceTable.Races[0] ?? null,
+  );
+
+export const getQualifyingResults = (season: string, round: string) =>
+  get<{ RaceTable: { Races: Race[] } }>(
+    `/${season}/${round}/qualifying/?limit=100`,
+  ).then((d) => d.RaceTable.Races[0] ?? null);
+
+export const getSprintResults = (season: string, round: string) =>
+  get<{ RaceTable: { Races: Race[] } }>(`/${season}/${round}/sprint/?limit=100`).then(
     (d) => d.RaceTable.Races[0] ?? null,
   );
 
@@ -163,6 +184,20 @@ export const raceResultsQuery = (season: string, round: string) =>
   queryOptions({
     queryKey: ["raceResults", season, round],
     queryFn: () => getRaceResults(season, round),
+    staleTime: 60_000,
+  });
+
+export const qualifyingQuery = (season: string, round: string) =>
+  queryOptions({
+    queryKey: ["qualifying", season, round],
+    queryFn: () => getQualifyingResults(season, round),
+    staleTime: 60_000,
+  });
+
+export const sprintQuery = (season: string, round: string) =>
+  queryOptions({
+    queryKey: ["sprint", season, round],
+    queryFn: () => getSprintResults(season, round),
     staleTime: 60_000,
   });
 
