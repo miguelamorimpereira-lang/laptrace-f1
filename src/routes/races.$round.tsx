@@ -23,6 +23,7 @@ import { LapChart } from "@/components/LapChart";
 import { BestLapChart } from "@/components/BestLapChart";
 import { TelemetrySection, type TelemetryEntry } from "@/components/TelemetrySection";
 import { TrackMap } from "@/components/TrackMap";
+import { useI18n } from "@/lib/i18n";
 
 const TABS: SessionKind[] = ["race", "qualifying", "sprint", "sprint-qualifying"];
 const TAB_LABELS: Record<SessionKind, string> = {
