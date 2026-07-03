@@ -65,14 +65,14 @@ function Races() {
             >
               <div className="flex items-start justify-between">
                 <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Round {r.round}
+                  {t("race.round", { n: r.round })}
                 </span>
                 <span
                   className={`font-mono text-[10px] uppercase tracking-widest ${
-                    done ? "text-muted-foreground" : "text-primary"
+                    done ? "text-muted-foreground" : "text-brand-blue"
                   }`}
                 >
-                  {done ? "Finished" : "Upcoming"}
+                  {done ? t("race.finished") : t("race.upcoming")}
                 </span>
               </div>
               <div className="mt-3">
