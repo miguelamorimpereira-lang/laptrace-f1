@@ -29,7 +29,7 @@ export const Route = createFileRoute("/standings")({
   },
   head: () => ({
     meta: [
-      { title: "F1 Championship Standings — Apex Data" },
+      { title: "F1 Championship Standings — Lap Trace F1" },
       {
         name: "description",
         content:
