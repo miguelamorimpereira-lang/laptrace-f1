@@ -37,13 +37,14 @@ export const Route = createFileRoute("/races/")({
 function Races() {
   const { season } = Route.useLoaderData();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const { data: races } = useSuspenseQuery(racesQuery(season));
   const now = Date.now();
 
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">Race Calendar</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("races.title")}</h1>
         <SeasonSelect
           season={season}
           onChange={(s) => navigate({ to: "/races", search: { season: s } })}
