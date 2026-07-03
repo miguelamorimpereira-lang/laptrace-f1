@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { seasonsQuery } from "@/lib/jolpica";
+import { useT } from "@/lib/i18n";
 
 export function SeasonSelect({
   season,
@@ -10,10 +11,11 @@ export function SeasonSelect({
   onChange: (season: string) => void;
 }) {
   const { data: seasons } = useSuspenseQuery(seasonsQuery());
+  const t = useT();
   return (
     <label className="flex items-center gap-2">
       <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-        Season
+        {t("common.season")}
       </span>
       <select
         value={season}
