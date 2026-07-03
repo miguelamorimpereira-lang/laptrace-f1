@@ -168,7 +168,7 @@ function GrandPrix() {
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {TAB_LABELS[t]}
+            {t(`tab.${t2(t3)}`)}
           </button>
         ))}
       </div>
