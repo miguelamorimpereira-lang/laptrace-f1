@@ -82,7 +82,7 @@ function Races() {
                 </p>
               </div>
               <p className="mt-3 font-mono text-xs text-muted-foreground">
-                {new Date(r.date).toLocaleDateString(undefined, {
+                {new Date(r.date).toLocaleDateString(locale, {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
