@@ -26,12 +26,8 @@ import { TrackMap } from "@/components/TrackMap";
 import { useI18n } from "@/lib/i18n";
 
 const TABS: SessionKind[] = ["race", "qualifying", "sprint", "sprint-qualifying"];
-const TAB_LABELS: Record<SessionKind, string> = {
-  race: "Race",
-  qualifying: "Qualifying",
-  sprint: "Sprint",
-  "sprint-qualifying": "Sprint Qualifying",
-};
+
+
 
 function isTab(v: unknown): v is SessionKind {
   return typeof v === "string" && (TABS as string[]).includes(v);
