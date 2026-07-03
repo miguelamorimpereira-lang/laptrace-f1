@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { seasonsQuery, racesQuery } from "@/lib/jolpica";
 import { ErrorBox, Spinner } from "@/components/ui-bits";
 import { SeasonSelect } from "@/components/SeasonSelect";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/races/")({
   validateSearch: (s: Record<string, unknown>) => ({
