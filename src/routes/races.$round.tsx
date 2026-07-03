@@ -157,7 +157,7 @@ function GrandPrix() {
 
       {/* Session tabs */}
       <div className="flex flex-wrap gap-1 border-b border-border">
-        {availableTabs.map((t) => (
+        {availableTabs.map((kind) => (
           <button
             key={t}
             type="button"
