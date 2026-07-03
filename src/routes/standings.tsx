@@ -11,6 +11,7 @@ import {
   DriverStandingsTable,
   ConstructorStandingsList,
 } from "@/components/standings-tables";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/standings")({
   validateSearch: (s: Record<string, unknown>) => ({
