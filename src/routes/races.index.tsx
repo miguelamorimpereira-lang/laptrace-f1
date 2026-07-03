@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { seasonsQuery, racesQuery } from "@/lib/jolpica";
 import { ErrorBox, Spinner } from "@/components/ui-bits";
 import { SeasonSelect } from "@/components/SeasonSelect";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/races/")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/races/")({
   },
   head: () => ({
     meta: [
-      { title: "F1 Race Calendar & Results — Apex Data" },
+      { title: "F1 Race Calendar & Results — Lap Trace F1" },
       {
         name: "description",
         content: "Browse the Formula 1 race calendar and jump into results for any round.",
@@ -36,13 +37,14 @@ export const Route = createFileRoute("/races/")({
 function Races() {
   const { season } = Route.useLoaderData();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const { data: races } = useSuspenseQuery(racesQuery(season));
   const now = Date.now();
 
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">Race Calendar</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("races.title")}</h1>
         <SeasonSelect
           season={season}
           onChange={(s) => navigate({ to: "/races", search: { season: s } })}
@@ -63,14 +65,14 @@ function Races() {
             >
               <div className="flex items-start justify-between">
                 <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Round {r.round}
+                  {t("race.round", { n: r.round })}
                 </span>
                 <span
                   className={`font-mono text-[10px] uppercase tracking-widest ${
-                    done ? "text-muted-foreground" : "text-primary"
+                    done ? "text-muted-foreground" : "text-brand-blue"
                   }`}
                 >
-                  {done ? "Finished" : "Upcoming"}
+                  {done ? t("race.finished") : t("race.upcoming")}
                 </span>
               </div>
               <div className="mt-3">
@@ -80,7 +82,7 @@ function Races() {
                 </p>
               </div>
               <p className="mt-3 font-mono text-xs text-muted-foreground">
-                {new Date(r.date).toLocaleDateString(undefined, {
+                {new Date(r.date).toLocaleDateString(locale, {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",

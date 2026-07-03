@@ -10,6 +10,8 @@ import { latestNewsQuery } from "@/lib/news.functions";
 import { Section, ErrorBox, Spinner } from "@/components/ui-bits";
 import { NewsFeed } from "@/components/NewsFeed";
 import { SeasonSelect } from "@/components/SeasonSelect";
+import { useI18n } from "@/lib/i18n";
+import logo from "@/assets/lap-trace-f1-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -18,13 +20,13 @@ export const Route = createFileRoute("/")({
   loaderDeps: ({ search }) => ({ season: search.season }),
   head: () => ({
     meta: [
-      { title: "LapTrace F1 — News, Calendar & Telemetry" },
+      { title: "Lap Trace F1 — News, Calendar & Telemetry" },
       {
         name: "description",
         content:
           "Latest Formula 1 news and the full race calendar. Dive into any Grand Prix for race and qualifying results, lap-time analysis and in-car telemetry.",
       },
-      { property: "og:title", content: "LapTrace F1 — News, Calendar & Telemetry" },
+      { property: "og:title", content: "Lap Trace F1 — News, Calendar & Telemetry" },
       {
         property: "og:description",
         content:
@@ -55,6 +57,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { season } = Route.useLoaderData();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const { data: drivers } = useSuspenseQuery(driverStandingsQuery(season));
   const { data: constructors } = useSuspenseQuery(constructorStandingsQuery(season));
   const { data: races } = useSuspenseQuery(racesQuery(season));
@@ -71,48 +74,74 @@ function Home() {
   return (
     <main className="mx-auto max-w-6xl space-y-10 px-4 py-8">
       {/* Hero */}
-      <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-primary to-brand-red"
+        />
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="flex-1 min-w-[260px]">
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-primary">
-              {season} Formula 1 World Championship
+              {t("home.eyebrow", { season })}
             </p>
             <h1 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
-              F1 news, the calendar, and every lap — visualized.
+              {t("home.title")}
             </h1>
             <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-              Catch the latest headlines, then pick a Grand Prix to explore race and
-              qualifying results, lap-time analysis and in-car telemetry.
+              {t("home.subtitle")}
             </p>
+            <div className="mt-5">
+              <SeasonSelect
+                season={season}
+                onChange={(s) => navigate({ to: "/", search: { season: s } })}
+              />
+            </div>
           </div>
-          <SeasonSelect
-            season={season}
-            onChange={(s) => navigate({ to: "/", search: { season: s } })}
+          <img
+            src={logo.url}
+            alt="Lap Trace F1"
+            className="hidden h-28 w-auto self-center sm:block lg:h-36"
           />
         </div>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Stat label="Championship Leader" value={leader ? `${leader.Driver.code}` : "—"} sub={leader ? `${leader.points} pts` : ""} />
-          <Stat label="Top Constructor" value={constructors[0]?.Constructor.name ?? "—"} sub={constructors[0] ? `${constructors[0].points} pts` : ""} />
-          <Stat label="Rounds" value={String(races.length)} sub="this season" />
           <Stat
-            label={nextRace ? "Next Race" : "Final Round"}
+            accent="blue"
+            label={t("stat.leader")}
+            value={leader ? `${leader.Driver.code}` : "—"}
+            sub={leader ? `${leader.points} ${t("unit.pts")}` : ""}
+          />
+          <Stat
+            accent="red"
+            label={t("stat.top_constructor")}
+            value={constructors[0]?.Constructor.name ?? "—"}
+            sub={constructors[0] ? `${constructors[0].points} ${t("unit.pts")}` : ""}
+          />
+          <Stat
+            accent="blue"
+            label={t("stat.rounds")}
+            value={String(races.length)}
+            sub={t("stat.this_season")}
+          />
+          <Stat
+            accent="red"
+            label={nextRace ? t("stat.next_race") : t("stat.final_round")}
             value={(nextRace ?? latestRace)?.Circuit.Location.country ?? "—"}
             sub={(nextRace ?? latestRace)?.raceName ?? ""}
           />
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
         <div className="order-2 lg:order-1">
           <Section
-            title="Race Calendar"
+            title={t("section.race_calendar")}
             action={
               <Link
                 to="/races"
                 search={{ season }}
-                className="font-mono text-[11px] uppercase tracking-widest text-primary hover:underline"
+                className="font-mono text-[11px] uppercase tracking-widest text-brand-blue hover:underline"
               >
-                Full calendar →
+                {t("section.full_calendar")}
               </Link>
             }
           >
@@ -129,14 +158,14 @@ function Home() {
                   >
                     <div className="flex items-start justify-between">
                       <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                        Round {r.round}
+                        {t("race.round", { n: r.round })}
                       </span>
                       <span
                         className={`font-mono text-[10px] uppercase tracking-widest ${
-                          done ? "text-muted-foreground" : "text-primary"
+                          done ? "text-muted-foreground" : "text-brand-blue"
                         }`}
                       >
-                        {done ? "Finished" : "Upcoming"}
+                        {done ? t("race.finished") : t("race.upcoming")}
                       </span>
                     </div>
                     <div className="mt-3">
@@ -146,7 +175,7 @@ function Home() {
                       </p>
                     </div>
                     <p className="mt-3 font-mono text-xs text-muted-foreground">
-                      {new Date(r.date).toLocaleDateString("en-GB", {
+                      {new Date(r.date).toLocaleDateString(locale, {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
@@ -161,29 +190,29 @@ function Home() {
 
         <div className="order-1 space-y-8 lg:order-2">
           <Section
-            title="Latest F1 News"
+            title={t("section.latest_news")}
             action={
               <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                via Autosport
+                {t("news.via")}
               </span>
             }
           >
             {newsQ.isLoading ? (
-              <Spinner label="Loading news…" />
+              <Spinner label={t("news.loading")} />
             ) : (
               <NewsFeed items={newsQ.data ?? []} />
             )}
           </Section>
 
           <Section
-            title="Standings"
+            title={t("section.standings")}
             action={
               <Link
                 to="/standings"
                 search={{ season }}
-                className="font-mono text-[11px] uppercase tracking-widest text-primary hover:underline"
+                className="font-mono text-[11px] uppercase tracking-widest text-brand-blue hover:underline"
               >
-                Full table →
+                {t("section.full_table")}
               </Link>
             }
           >
@@ -207,14 +236,30 @@ function Home() {
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Stat({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  accent: "blue" | "red";
+}) {
   return (
-    <div className="rounded-lg border border-border bg-background/40 p-3">
-      <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+    <div className="relative overflow-hidden rounded-lg border border-border bg-background/40 p-3">
+      <span
+        aria-hidden
+        className={`absolute inset-y-0 left-0 w-1 ${
+          accent === "blue" ? "bg-brand-blue" : "bg-brand-red"
+        }`}
+      />
+      <p className="pl-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 truncate text-lg font-semibold">{value}</p>
-      {sub && <p className="truncate text-xs text-muted-foreground">{sub}</p>}
+      <p className="mt-1 truncate pl-1.5 text-lg font-semibold">{value}</p>
+      {sub && <p className="truncate pl-1.5 text-xs text-muted-foreground">{sub}</p>}
     </div>
   );
 }

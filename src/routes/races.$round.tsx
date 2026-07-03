@@ -23,14 +23,11 @@ import { LapChart } from "@/components/LapChart";
 import { BestLapChart } from "@/components/BestLapChart";
 import { TelemetrySection, type TelemetryEntry } from "@/components/TelemetrySection";
 import { TrackMap } from "@/components/TrackMap";
+import { useI18n } from "@/lib/i18n";
 
 const TABS: SessionKind[] = ["race", "qualifying", "sprint", "sprint-qualifying"];
-const TAB_LABELS: Record<SessionKind, string> = {
-  race: "Race",
-  qualifying: "Qualifying",
-  sprint: "Sprint",
-  "sprint-qualifying": "Sprint Qualifying",
-};
+
+
 
 function isTab(v: unknown): v is SessionKind {
   return typeof v === "string" && (TABS as string[]).includes(v);
@@ -89,6 +86,7 @@ function GrandPrix() {
   const { round } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const year = Number(season);
 
   const { data: races } = useSuspenseQuery(racesQuery(season));
@@ -140,12 +138,12 @@ function GrandPrix() {
           search={{ season }}
           className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
         >
-          ← {season} Calendar
+          {t("gp.back", { season })}
         </Link>
         <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">{race.raceName}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Round {race.round} · {race.Circuit.circuitName}, {race.Circuit.Location.country} ·{" "}
-          {new Date(race.date).toLocaleDateString("en-GB", {
+          {t("race.round", { n: race.round })} · {race.Circuit.circuitName}, {race.Circuit.Location.country} ·{" "}
+          {new Date(race.date).toLocaleDateString(locale, {
             day: "2-digit",
             month: "long",
             year: "numeric",
@@ -155,18 +153,18 @@ function GrandPrix() {
 
       {/* Session tabs */}
       <div className="flex flex-wrap gap-1 border-b border-border">
-        {availableTabs.map((t) => (
+        {availableTabs.map((kind) => (
           <button
-            key={t}
+            key={kind}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => setTab(kind)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
-              t === tab
+              kind === tab
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {TAB_LABELS[t]}
+            {t(`tab.${kind}`)}
           </button>
         ))}
       </div>

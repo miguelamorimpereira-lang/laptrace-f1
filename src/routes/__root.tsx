@@ -6,12 +6,15 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  ScriptOnce,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Nav } from "../components/Nav";
+import { LanguageProvider } from "../lib/i18n";
+import { ThemeProvider, themeInitScript } from "../lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -112,11 +115,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
+        <ScriptOnce>{themeInitScript}</ScriptOnce>
         {children}
         <Scripts />
       </body>
@@ -129,11 +133,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen">
-        <Nav />
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </div>
+      <ThemeProvider>
+        <LanguageProvider>
+          <div className="min-h-screen">
+            <Nav />
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </div>
+        </LanguageProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

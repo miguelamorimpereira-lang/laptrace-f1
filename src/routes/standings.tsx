@@ -11,6 +11,7 @@ import {
   DriverStandingsTable,
   ConstructorStandingsList,
 } from "@/components/standings-tables";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/standings")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/standings")({
   },
   head: () => ({
     meta: [
-      { title: "F1 Championship Standings — Apex Data" },
+      { title: "F1 Championship Standings — Lap Trace F1" },
       {
         name: "description",
         content:
@@ -48,13 +49,14 @@ export const Route = createFileRoute("/standings")({
 function Standings() {
   const { season } = Route.useLoaderData();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const { data: drivers } = useSuspenseQuery(driverStandingsQuery(season));
   const { data: constructors } = useSuspenseQuery(constructorStandingsQuery(season));
 
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">Championship Standings</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("standings.title")}</h1>
         <SeasonSelect
           season={season}
           onChange={(s) => navigate({ to: "/standings", search: { season: s } })}
@@ -63,12 +65,12 @@ function Standings() {
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Section title={`Drivers · ${season}`}>
+          <Section title={`${t("standings.drivers")} · ${season}`}>
             <DriverStandingsTable standings={drivers} />
           </Section>
         </div>
         <div>
-          <Section title={`Constructors · ${season}`}>
+          <Section title={`${t("standings.constructors")} · ${season}`}>
             <ConstructorStandingsList standings={constructors} />
           </Section>
         </div>

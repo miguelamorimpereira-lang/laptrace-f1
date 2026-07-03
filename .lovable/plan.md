@@ -1,64 +1,47 @@
-# F1 site: news home + per-session navigation
+# Lap Trace F1 — Rebrand, Theming & Multi-language
 
-Restructure the app so users pick **year → race → session (Race / Qualifying / Sprint)** instead of landing on race data directly, add a **latest-news** home page, and add **Q1/Q2/Q3 telemetry** in qualifying.
+Four changes: rebrand to "Lap Trace F1" with the logo image and its blue/red colors, a bolder home page with larger news + imagery, a light/dark toggle (defaulting to the visitor's system setting), and full UI translation across 6 languages.
 
-## 1. Home page — latest news + race calendar
+## 1. Branding: "Lap Trace F1" + logo
 
-Rework `src/routes/index.tsx` to lead with news and the calendar (year-selectable):
-- **Latest F1 news** feed: headline, source, time-ago, thumbnail (when present), linking out to the full article in a new tab.
-- **Race calendar** for the selected season (year selector), each round linking into the Grand Prix hub. Upcoming vs finished badges (reuse logic from the current races list).
-- Keep a slim championship-leader strip so the landing still surfaces standings, but news + calendar are the focus.
+- Upload the provided logo to the CDN (via lovable-assets) and use it in the header instead of the "F1 / Apex Data" text mark.
+- Replace every "Apex Data" string with "Lap Trace F1" (found in `src/routes/races.index.tsx` page title, and anywhere else in metadata/nav).
+- Add the logo as a graphic in the home hero to bring in color/imagery.
 
-News comes from a server function (RSS has no browser CORS, and XML parsing belongs server-side):
-- New `src/lib/news.functions.ts` → `getLatestNews` (`createServerFn`, GET) fetches the Autosport F1 RSS feed (`https://www.autosport.com/rss/f1/news/`, Motorsport.com as fallback), parses it with `fast-xml-parser`, and returns a clean DTO array (`title`, `link`, `pubDate`, `source`, `image?`). Cached via TanStack Query with a long `staleTime`.
-- Add dependency `fast-xml-parser` (pure JS, Worker-safe).
-- New `src/components/NewsFeed.tsx` renders the list.
+## 2. Color palette from the logo
 
-## 2. Grand Prix hub with session tabs
+The logo is **racing blue** + **red** on light gray. Update the design tokens in `src/styles.css`:
 
-Turn `src/routes/races.$round.tsx` into a **Grand Prix hub**. Header stays (GP name, circuit, date, back-to-calendar). Below it, a **session tab bar** driven by a `tab` search param: `race` (default) · `qualifying` · `sprint` · `sprint-qualifying`.
-- Tabs only appear when that session exists for the weekend (Sprint tabs shown only for sprint weekends, detected via the OpenF1 sessions for that meeting).
-- The circuit-layout sticky sidebar + hover-to-marker interaction is kept and shared across all telemetry views.
+- Keep **red** as the primary accent.
+- Add **blue** as a secondary/accent token used for links, upcoming-race badges, and chart lines.
+- Introduce both a **light theme** (`:root`) and **dark theme** (`.dark`) token set so the toggle works. Currently only dark values exist.
+- Apply blue/red accents to stat cards, section headers, and calendar cards so the UI is more colorful (no hardcoded colors — all via tokens).
 
-### Race tab
-Exactly today's content: all-laps chart, fastest-lap-per-driver, fastest-lap telemetry, classification table.
+## 3. Light / Dark mode toggle
 
-### Qualifying tab
-- **Q1 / Q2 / Q3 sub-selector.**
-- For the chosen segment, show **best-lap telemetry per driver** (speed · throttle · brake · gear), same overlay chart as race, plus each driver's lap time.
-- Data join: Jolpica `/qualifying` gives each driver's Q1/Q2/Q3 lap *time*; OpenF1's single Qualifying session gives the telemetry. For each selected driver we find the OpenF1 lap whose `lap_duration` best matches that driver's Jolpica Q-segment time, then pull that lap's telemetry. This yields genuinely segment-specific traces.
-- Driver chips let the user pick up to 3 drivers to compare (reusing the existing selection UI).
+- Add a theme toggle (sun/moon) at the top-right of the nav.
+- Default follows the **system** preference; the user's manual choice is saved to `localStorage` and wins on return visits.
+- A tiny pre-hydration script in `__root.tsx` sets the `.dark` class before paint to avoid a flash / hydration mismatch.
 
-### Sprint tab (sprint weekends only)
-- Sprint race results + lap charts + fastest-lap telemetry, reusing the race components against the OpenF1 Sprint session and Jolpica `/sprint` results.
+## 4. Multi-language (English, Portuguese, Swedish, French, Spanish, German)
 
-### Sprint Qualifying / Shootout tab (when present)
-- Best-lap telemetry per driver for the Sprint Qualifying session. Ergast/Jolpica has no SQ1/SQ2/SQ3 split, so this shows each driver's overall fastest lap in that session (no sub-segments) with a short note.
+- Add a language selector (globe dropdown) at the top-right of the nav next to the theme toggle.
+- A lightweight in-app translation layer (React context + `useT()` hook) with one dictionary per language holding all interface strings: nav labels, hero copy, section titles ("Latest F1 News", "Race Calendar", "Standings"), stat labels, buttons, race status ("Finished"/"Upcoming"), telemetry labels, etc.
+- Selected language saved to `localStorage`; defaults to the browser language if it's one of the six, otherwise English.
+- Dates reformat to the chosen locale.
+- **Note:** F1 news headlines come from an external English news feed and will remain in their source language — only the app's own interface text is translated.
 
-## 3. Data layer additions
+## 5. Bigger news + imagery
 
-`src/lib/jolpica.ts`:
-- `getQualifyingResults(season, round)` + `qualifyingQuery` — returns per-driver `Q1/Q2/Q3` strings (parsed to seconds with the existing `lapTimeToSeconds`).
-- `getSprintResults(season, round)` + `sprintQuery` — `/sprint` endpoint, same shape as race results.
+- Give **Latest F1 News** more prominence: move it higher / widen it, show larger article thumbnails and a bigger headline for the top story.
+- Increase image sizes in the news feed cards.
+- Add subtle blue→red accent treatments to the hero and cards for a livelier, more colorful look.
 
-`src/lib/openf1.ts`:
-- Generalize session resolution: `resolveSession(year, raceDate, sessionName)` matching by date to the GP weekend (works for `Race`, `Qualifying`, `Sprint`, `Sprint Qualifying`/`Sprint Shootout`). Keep `getRaceSession` as a thin wrapper.
-- `listWeekendSessions(year, raceDate)` so the hub knows which tabs to show.
-- `getLapByDuration(sessionKey, driverNumber, targetSeconds)` — pick the valid lap closest to a target time (for Q-segment matching); reuse `getLapTelemetry`.
-- New query option `segmentTelemetryQuery(sessionKey, driverNumber, targetSeconds)`.
+## Technical notes
 
-## 4. Telemetry component refactor
+- i18n: custom lightweight context (no heavy dependency) with typed keys and 6 dictionaries under `src/lib/i18n/`. A `LanguageProvider` wraps the app in `__root.tsx`; components call `useT()`.
+- Theming: standard shadcn dual-token pattern (`:root` light + `.dark` dark) already scaffolded via `@theme inline`; add a `ThemeProvider`/toggle and the pre-hydration `ScriptOnce`.
+- Logo served from CDN via an `.asset.json` pointer, imported where needed.
+- Files touched: `src/styles.css`, `src/routes/__root.tsx`, `src/components/Nav.tsx`, `src/routes/index.tsx`, `src/components/NewsFeed.tsx`, `src/routes/races.index.tsx`, plus new `src/lib/i18n/*`, `src/components/ThemeToggle.tsx`, `src/components/LanguageSelect.tsx`. Other route/component text gets wired to `useT()` incrementally in the same pass.
 
-Generalize the current `TelemetrySection` into a reusable telemetry view that accepts a resolved **session** and an optional **per-driver target lap time** (used by qualifying segments; omitted for race/sprint where "fastest lap" is used). The existing rate-limited OpenF1 request queue, driver mapping, merge, and hover-distance wiring are preserved. The race tab keeps its current behavior; qualifying/sprint reuse the same component with different inputs.
-
-## Technical notes / caveats
-- Telemetry (all sessions) remains **2023+** only via OpenF1; pre-2023 races show lap-time charts + results but a clear "telemetry unavailable" note.
-- Q1/Q2/Q3 telemetry relies on **duration matching** between Jolpica times and OpenF1 laps — robust in practice since each driver's Q times are distinct, with a small tolerance guard.
-- No steering channel (not published by any free source), consistent with the current build.
-- OpenF1's live-session lockout handling and the existing throttling/back-off are unchanged.
-- News is read-only and server-fetched; no secrets or database required.
-
-## Files
-- Edit: `src/routes/index.tsx`, `src/routes/races.$round.tsx`, `src/lib/jolpica.ts`, `src/lib/openf1.ts`, `src/components/TelemetrySection.tsx`.
-- Add: `src/lib/news.functions.ts`, `src/components/NewsFeed.tsx`, a `SessionTabs` control, and a qualifying segment selector (small components).
-- Dependency: `fast-xml-parser`.
+Both toggles live at the top of the site on every page, so the choices persist as you navigate.
