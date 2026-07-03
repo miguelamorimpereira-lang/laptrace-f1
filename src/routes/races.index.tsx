@@ -18,7 +18,7 @@ export const Route = createFileRoute("/races/")({
   },
   head: () => ({
     meta: [
-      { title: "F1 Race Calendar & Results — Apex Data" },
+      { title: "F1 Race Calendar & Results — Lap Trace F1" },
       {
         name: "description",
         content: "Browse the Formula 1 race calendar and jump into results for any round.",
