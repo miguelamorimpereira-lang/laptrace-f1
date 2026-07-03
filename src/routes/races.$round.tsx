@@ -90,6 +90,7 @@ function GrandPrix() {
   const { round } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const year = Number(season);
 
   const { data: races } = useSuspenseQuery(racesQuery(season));
