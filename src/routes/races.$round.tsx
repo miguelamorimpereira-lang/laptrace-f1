@@ -159,16 +159,16 @@ function GrandPrix() {
       <div className="flex flex-wrap gap-1 border-b border-border">
         {availableTabs.map((kind) => (
           <button
-            key={t}
+            key={kind}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => setTab(kind)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
-              t === tab
+              kind === tab
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t(`tab.${t2(t3)}`)}
+            {t(`tab.${kind}`)}
           </button>
         ))}
       </div>
