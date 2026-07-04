@@ -295,7 +295,7 @@ function RaceTab({
       <Section title="Fastest Lap per Driver — Gap to Best">
         <BestLapChart laps={laps} results={results} />
       </Section>
-      <Section title="Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear">
+      <Section title="Fastest-Lap Telemetry — Speed · RPM · Throttle · Brake · Gear">
         {year < OPENF1_MIN_SEASON ? (
           <TelemetryUnavailableNote year={year} />
         ) : (
@@ -387,7 +387,7 @@ function QualifyingTab({
         </div>
       </Section>
 
-      <Section title={`${segment} Best-Lap Telemetry — Speed · Throttle · Brake · Gear`}>
+      <Section title={`${segment} Best-Lap Telemetry — Speed · RPM · Throttle · Brake · Gear`}>
         {year < OPENF1_MIN_SEASON ? (
           <TelemetryUnavailableNote year={year} />
         ) : entries.length === 0 ? (
@@ -434,7 +434,7 @@ function SprintTab({
 }) {
   return (
     <>
-      <Section title="Sprint Fastest-Lap Telemetry — Speed · Throttle · Brake · Gear">
+      <Section title="Sprint Fastest-Lap Telemetry — Speed · RPM · Throttle · Brake · Gear">
         {year < OPENF1_MIN_SEASON ? (
           <TelemetryUnavailableNote year={year} />
         ) : (

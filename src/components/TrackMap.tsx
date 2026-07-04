@@ -59,7 +59,8 @@ export function TrackMap({
     <div className="rounded-xl border border-border bg-card p-3">
       <svg
         viewBox={`0 0 ${path.width} ${path.height}`}
-        className="mx-auto block h-auto w-full max-w-xs"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto block h-auto max-h-[300px] w-full max-w-xs"
         role="img"
         aria-label={`${circuitName} track layout`}
       >
