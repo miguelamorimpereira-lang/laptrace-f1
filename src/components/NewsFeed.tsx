@@ -31,9 +31,10 @@ export function NewsFeed({ items }: { items: NewsItem[] }) {
   }
 
   const [featured, ...rest] = items;
+  const cards = rest.slice(0, 6);
 
   return (
-    <div className="space-y-4">
+    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr] lg:items-start">
       {/* Featured top story */}
       <a
         href={featured.link}
@@ -50,11 +51,11 @@ export function NewsFeed({ items }: { items: NewsItem[] }) {
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">
               <span className="inline-block rounded bg-primary px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-primary-foreground">
                 {t("news.top_story")}
               </span>
-              <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-white sm:text-xl">
+              <h3 className="mt-2 line-clamp-3 text-xl font-bold leading-snug text-white sm:text-2xl">
                 {featured.title}
               </h3>
               <p className="mt-1.5 font-mono text-[10px] uppercase tracking-widest text-white/70">
@@ -68,7 +69,7 @@ export function NewsFeed({ items }: { items: NewsItem[] }) {
             <span className="inline-block rounded bg-primary px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-primary-foreground">
               {t("news.top_story")}
             </span>
-            <h3 className="mt-2 text-lg font-bold leading-snug sm:text-xl">
+            <h3 className="mt-2 text-xl font-bold leading-snug sm:text-2xl">
               {featured.title}
             </h3>
             <p className="mt-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -79,25 +80,27 @@ export function NewsFeed({ items }: { items: NewsItem[] }) {
         )}
       </a>
 
-      {/* Rest of the feed */}
-      <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-        {rest.map((n) => (
+      {/* Secondary stories as a grid of cards */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {cards.map((n) => (
           <a
             key={n.link}
             href={n.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex gap-4 p-4 transition-colors hover:bg-secondary/50"
+            className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
           >
             {n.image && (
-              <img
-                src={n.image}
-                alt=""
-                loading="lazy"
-                className="h-20 w-28 flex-shrink-0 rounded-md object-cover"
-              />
+              <div className="aspect-[16/9] w-full overflow-hidden">
+                <img
+                  src={n.image}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
             )}
-            <div className="min-w-0 self-center">
+            <div className="flex-1 p-3">
               <p className="line-clamp-2 text-sm font-semibold leading-snug">
                 {n.title}
               </p>
