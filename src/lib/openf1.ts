@@ -429,6 +429,7 @@ export function mergeTelemetry(
     const row: Record<string, number | null> = { distance: Math.round(d) };
     for (const s of series) {
       row[`${s.code}_speed`] = round(sampleAt(s.samples, d, "speed"));
+      row[`${s.code}_rpm`] = roundGear(sampleAt(s.samples, d, "rpm"));
       row[`${s.code}_throttle`] = round(sampleAt(s.samples, d, "throttle"));
       row[`${s.code}_brake`] = round(sampleAt(s.samples, d, "brake"));
       row[`${s.code}_gear`] = roundGear(sampleAt(s.samples, d, "gear"));
