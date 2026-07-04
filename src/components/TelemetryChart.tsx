@@ -72,6 +72,7 @@ function Channel({
             ticks={ticks}
             stroke={AXIS}
             width={34}
+            tickFormatter={yTickFormatter}
             tick={{ fontSize: 10, fontFamily: "JetBrains Mono" }}
           />
           <Tooltip
