@@ -26,6 +26,7 @@ function Channel({
   domain,
   step,
   ticks,
+  yTickFormatter,
   onHover,
   onLeave,
 }: {
@@ -38,6 +39,7 @@ function Channel({
   domain?: [number, number];
   step?: boolean;
   ticks?: number[];
+  yTickFormatter?: (v: number) => string;
   onHover?: (distance: number) => void;
   onLeave?: () => void;
 }) {
