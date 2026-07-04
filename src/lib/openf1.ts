@@ -120,6 +120,7 @@ export interface OF1CarData {
 export interface TelemetrySample {
   distance: number;
   speed: number;
+  rpm: number;
   throttle: number;
   brake: number;
   gear: number;
