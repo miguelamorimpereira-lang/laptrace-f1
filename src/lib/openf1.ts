@@ -261,16 +261,20 @@ export async function getLapTelemetry(
 ): Promise<TelemetrySample[]> {
   if (!lap.date_start || lap.lap_duration == null) return [];
   const start = new Date(lap.date_start).getTime();
-  const end = start + lap.lap_duration * 1000 + 500;
-  const startIso = new Date(start - 200).toISOString();
-  const endIso = new Date(end).toISOString();
+  // Bound the window to a single flying lap (start line → start line). The old
+  // ±(200ms/500ms) padding pulled in samples from the previous/next lap, which
+  // inflated the integrated lap length and pushed the on-track marker out of
+  // sync with the telemetry cursor. A tight window keeps distance≈real lap.
+  const end = start + lap.lap_duration * 1000;
+  const startIso = new Date(start - 60).toISOString();
+  const endIso = new Date(end + 60).toISOString();
   const raw = await get<OF1CarData>(
     `/car_data?session_key=${sessionKey}&driver_number=${driverNumber}` +
       `&date>=${startIso}&date<=${endIso}`,
   );
   const rows = raw
     .map((r) => ({ ...r, t: new Date(r.date).getTime() }))
-    .filter((r) => Number.isFinite(r.speed))
+    .filter((r) => Number.isFinite(r.speed) && r.t >= start && r.t <= end)
     .sort((a, b) => a.t - b.t);
   if (rows.length === 0) return [];
 
@@ -285,6 +289,7 @@ export async function getLapTelemetry(
     out.push({
       distance,
       speed: rows[i].speed,
+      rpm: rows[i].rpm,
       throttle: rows[i].throttle,
       brake: rows[i].brake > 0 ? 100 : 0,
       gear: rows[i].n_gear,
