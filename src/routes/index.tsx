@@ -131,106 +131,104 @@ function Home() {
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-        <div className="order-2 lg:order-1">
-          <Section
-            title={t("section.race_calendar")}
-            action={
-              <Link
-                to="/races"
-                search={{ season }}
-                className="font-mono text-[11px] uppercase tracking-widest text-brand-blue hover:underline"
-              >
-                {t("section.full_calendar")}
-              </Link>
-            }
-          >
-            <div className="grid gap-3 sm:grid-cols-2">
-              {races.map((r) => {
-                const done = timeOf(r) <= now;
-                return (
-                  <Link
-                    key={r.round}
-                    to="/races/$round"
-                    params={{ round: r.round }}
-                    search={{ season }}
-                    className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
-                  >
-                    <div className="flex items-start justify-between">
-                      <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                        {t("race.round", { n: r.round })}
-                      </span>
-                      <span
-                        className={`font-mono text-[10px] uppercase tracking-widest ${
-                          done ? "text-muted-foreground" : "text-brand-blue"
-                        }`}
-                      >
-                        {done ? t("race.finished") : t("race.upcoming")}
-                      </span>
-                    </div>
-                    <div className="mt-3">
-                      <p className="font-semibold leading-tight">{r.raceName}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {r.Circuit.Location.locality}, {r.Circuit.Location.country}
-                      </p>
-                    </div>
-                    <p className="mt-3 font-mono text-xs text-muted-foreground">
-                      {new Date(r.date).toLocaleDateString(locale, {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+      {/* Latest news — headline section, front and centre */}
+      <Section
+        title={t("section.latest_news")}
+        action={
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            {t("news.via")}
+          </span>
+        }
+      >
+        {newsQ.isLoading ? (
+          <Spinner label={t("news.loading")} />
+        ) : (
+          <NewsFeed items={newsQ.data ?? []} />
+        )}
+      </Section>
+
+      {/* Calendar (main) + standings (sidebar) */}
+      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+        <Section
+          title={t("section.race_calendar")}
+          action={
+            <Link
+              to="/races"
+              search={{ season }}
+              className="font-mono text-[11px] uppercase tracking-widest text-brand-blue hover:underline"
+            >
+              {t("section.full_calendar")}
+            </Link>
+          }
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            {races.map((r) => {
+              const done = timeOf(r) <= now;
+              return (
+                <Link
+                  key={r.round}
+                  to="/races/$round"
+                  params={{ round: r.round }}
+                  search={{ season }}
+                  className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+                >
+                  <div className="flex items-start justify-between">
+                    <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                      {t("race.round", { n: r.round })}
+                    </span>
+                    <span
+                      className={`font-mono text-[10px] uppercase tracking-widest ${
+                        done ? "text-muted-foreground" : "text-brand-blue"
+                      }`}
+                    >
+                      {done ? t("race.finished") : t("race.upcoming")}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <p className="font-semibold leading-tight">{r.raceName}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {r.Circuit.Location.locality}, {r.Circuit.Location.country}
                     </p>
-                  </Link>
-                );
-              })}
-            </div>
-          </Section>
-        </div>
+                  </div>
+                  <p className="mt-3 font-mono text-xs text-muted-foreground">
+                    {new Date(r.date).toLocaleDateString(locale, {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </Section>
 
-        <div className="order-1 space-y-8 lg:order-2">
-          <Section
-            title={t("section.latest_news")}
-            action={
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {t("news.via")}
-              </span>
-            }
-          >
-            {newsQ.isLoading ? (
-              <Spinner label={t("news.loading")} />
-            ) : (
-              <NewsFeed items={newsQ.data ?? []} />
-            )}
-          </Section>
-
-          <Section
-            title={t("section.standings")}
-            action={
-              <Link
-                to="/standings"
-                search={{ season }}
-                className="font-mono text-[11px] uppercase tracking-widest text-brand-blue hover:underline"
-              >
-                {t("section.full_table")}
-              </Link>
-            }
-          >
-            <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-              {drivers.slice(0, 5).map((d) => (
-                <div key={d.Driver.driverId} className="flex items-center gap-3 p-3">
-                  <span className="w-5 font-mono text-xs text-muted-foreground">
-                    {d.position}
-                  </span>
-                  <span className="flex-1 text-sm font-medium">
-                    {d.Driver.givenName} {d.Driver.familyName}
-                  </span>
-                  <span className="font-mono text-sm font-semibold">{d.points}</span>
-                </div>
-              ))}
-            </div>
-          </Section>
-        </div>
+        <Section
+          title={t("section.standings")}
+          action={
+            <Link
+              to="/standings"
+              search={{ season }}
+              className="font-mono text-[11px] uppercase tracking-widest text-brand-blue hover:underline"
+            >
+              {t("section.full_table")}
+            </Link>
+          }
+        >
+          <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+            {drivers.slice(0, 5).map((d) => (
+              <div key={d.Driver.driverId} className="flex items-center gap-3 p-3">
+                <span className="w-5 font-mono text-xs text-muted-foreground">
+                  {d.position}
+                </span>
+                <span className="flex-1 text-sm font-medium">
+                  {d.Driver.givenName} {d.Driver.familyName}
+                </span>
+                <span className="font-mono text-sm font-semibold">{d.points}</span>
+              </div>
+            ))}
+          </div>
+        </Section>
       </div>
     </main>
   );
