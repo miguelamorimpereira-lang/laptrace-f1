@@ -106,6 +106,7 @@ function Channel({
 function key(title: string): string {
   const t = title.toLowerCase();
   if (t.startsWith("speed")) return "speed";
+  if (t.startsWith("rpm") || t.startsWith("engine")) return "rpm";
   if (t.startsWith("throttle")) return "throttle";
   if (t.startsWith("brake")) return "brake";
   if (t.startsWith("gear")) return "gear";
