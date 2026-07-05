@@ -31,7 +31,7 @@ export function RaceCard({
           style={{ backgroundImage: flag }}
         />
       )}
-      <span aria-hidden className="absolute inset-0 bg-card/88 group-hover:bg-card/82" />
+      <span aria-hidden className="absolute inset-0 bg-card/90 group-hover:bg-card/80" />
       <span
         aria-hidden
         className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-primary to-brand-red"
