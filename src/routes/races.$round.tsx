@@ -97,6 +97,13 @@ function GrandPrix() {
 
   const [hoverDistance, setHoverDistance] = useState<number | null>(null);
   const [maxDistance, setMaxDistance] = useState(0);
+  const [brakeDistances, setBrakeDistances] = useState<number[]>([]);
+  const updateBrakeDistances = (distances: number[]) =>
+    setBrakeDistances((prev) =>
+      prev.length === distances.length && prev.every((d, i) => Math.abs(d - distances[i]) < 1)
+        ? prev
+        : distances,
+    );
   const positionFraction =
     hoverDistance != null && maxDistance > 0
       ? Math.min(1, Math.max(0, hoverDistance / maxDistance))
@@ -230,6 +237,7 @@ function GrandPrix() {
               positionFraction={positionFraction}
               hoverDistance={hoverDistance}
               maxDistance={maxDistance}
+              brakeDistances={brakeDistances}
             />
           </Section>
         </aside>
@@ -307,6 +315,7 @@ function RaceTab({
             emptyNote="No OpenF1 race session could be matched to this weekend."
             onHoverDistance={onHover}
             onMaxDistance={onMax}
+            onBrakeDistances={updateBrakeDistances}
           />
         )}
       </Section>
@@ -402,6 +411,7 @@ function QualifyingTab({
             emptyNote="No OpenF1 qualifying session could be matched to this weekend."
             onHoverDistance={onHover}
             onMaxDistance={onMax}
+            onBrakeDistances={updateBrakeDistances}
           />
         )}
       </Section>
@@ -446,6 +456,7 @@ function SprintTab({
             emptyNote="No OpenF1 sprint session could be matched to this weekend."
             onHoverDistance={onHover}
             onMaxDistance={onMax}
+            onBrakeDistances={updateBrakeDistances}
           />
         )}
       </Section>
@@ -511,6 +522,7 @@ function SprintQualifyingTab({
           emptyNote="No OpenF1 sprint qualifying session could be matched to this weekend."
           onHoverDistance={onHover}
           onMaxDistance={onMax}
+          onBrakeDistances={updateBrakeDistances}
         />
       )}
     </Section>
