@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
   seasonsQuery,
@@ -97,6 +97,13 @@ function GrandPrix() {
 
   const [hoverDistance, setHoverDistance] = useState<number | null>(null);
   const [maxDistance, setMaxDistance] = useState(0);
+  const [brakeDistances, setBrakeDistances] = useState<number[]>([]);
+  const updateBrakeDistances = useCallback((distances: number[]) =>
+    setBrakeDistances((prev) =>
+      prev.length === distances.length && prev.every((d, i) => Math.abs(d - distances[i]) < 1)
+        ? prev
+        : distances,
+    ), []);
   const positionFraction =
     hoverDistance != null && maxDistance > 0
       ? Math.min(1, Math.max(0, hoverDistance / maxDistance))
@@ -182,6 +189,7 @@ function GrandPrix() {
               weekendError={weekendQ.error as Error | null}
               onHover={setHoverDistance}
               onMax={setMaxDistance}
+              onBrake={updateBrakeDistances}
             />
           )}
           {tab === "qualifying" && (
@@ -194,6 +202,7 @@ function GrandPrix() {
               weekendError={weekendQ.error as Error | null}
               onHover={setHoverDistance}
               onMax={setMaxDistance}
+              onBrake={updateBrakeDistances}
             />
           )}
           {tab === "sprint" && (
@@ -205,6 +214,7 @@ function GrandPrix() {
               weekendError={weekendQ.error as Error | null}
               onHover={setHoverDistance}
               onMax={setMaxDistance}
+              onBrake={updateBrakeDistances}
             />
           )}
           {tab === "sprint-qualifying" && (
@@ -217,6 +227,7 @@ function GrandPrix() {
               weekendError={weekendQ.error as Error | null}
               onHover={setHoverDistance}
               onMax={setMaxDistance}
+              onBrake={updateBrakeDistances}
             />
           )}
         </div>
@@ -230,6 +241,7 @@ function GrandPrix() {
               positionFraction={positionFraction}
               hoverDistance={hoverDistance}
               maxDistance={maxDistance}
+              brakeDistances={brakeDistances}
             />
           </Section>
         </aside>
@@ -262,6 +274,7 @@ function RaceTab({
   weekendError,
   onHover,
   onMax,
+  onBrake,
 }: {
   season: string;
   round: string;
@@ -272,6 +285,7 @@ function RaceTab({
   weekendError: Error | null;
   onHover: (d: number | null) => void;
   onMax: (m: number) => void;
+  onBrake: (distances: number[]) => void;
 }) {
   const { data: race } = useSuspenseQuery(raceResultsQuery(season, round));
   const { data: laps } = useSuspenseQuery(lapsQuery(season, round));
@@ -307,6 +321,7 @@ function RaceTab({
             emptyNote="No OpenF1 race session could be matched to this weekend."
             onHoverDistance={onHover}
             onMaxDistance={onMax}
+            onBrakeDistances={onBrake}
           />
         )}
       </Section>
@@ -331,6 +346,7 @@ function QualifyingTab({
   weekendError,
   onHover,
   onMax,
+  onBrake,
 }: {
   season: string;
   round: string;
@@ -340,6 +356,7 @@ function QualifyingTab({
   weekendError: Error | null;
   onHover: (d: number | null) => void;
   onMax: (m: number) => void;
+  onBrake: (distances: number[]) => void;
 }) {
   const qualiQ = useQuery(qualifyingQuery(season, round));
   const [segment, setSegment] = useState<Segment>("Q3");
@@ -402,6 +419,7 @@ function QualifyingTab({
             emptyNote="No OpenF1 qualifying session could be matched to this weekend."
             onHoverDistance={onHover}
             onMaxDistance={onMax}
+            onBrakeDistances={onBrake}
           />
         )}
       </Section>
@@ -423,6 +441,7 @@ function SprintTab({
   weekendError,
   onHover,
   onMax,
+  onBrake,
 }: {
   results: RaceResult[];
   year: number;
@@ -431,6 +450,7 @@ function SprintTab({
   weekendError: Error | null;
   onHover: (d: number | null) => void;
   onMax: (m: number) => void;
+  onBrake: (distances: number[]) => void;
 }) {
   return (
     <>
@@ -446,6 +466,7 @@ function SprintTab({
             emptyNote="No OpenF1 sprint session could be matched to this weekend."
             onHoverDistance={onHover}
             onMaxDistance={onMax}
+            onBrakeDistances={onBrake}
           />
         )}
       </Section>
@@ -467,6 +488,7 @@ function SprintQualifyingTab({
   weekendError,
   onHover,
   onMax,
+  onBrake,
 }: {
   season: string;
   round: string;
@@ -476,6 +498,7 @@ function SprintQualifyingTab({
   weekendError: Error | null;
   onHover: (d: number | null) => void;
   onMax: (m: number) => void;
+  onBrake: (distances: number[]) => void;
 }) {
   // Ergast/Jolpica has no SQ1/SQ2/SQ3 split, so we use each driver's overall
   // fastest lap in the OpenF1 Sprint Qualifying session. Driver list comes from
@@ -511,6 +534,7 @@ function SprintQualifyingTab({
           emptyNote="No OpenF1 sprint qualifying session could be matched to this weekend."
           onHoverDistance={onHover}
           onMaxDistance={onMax}
+          onBrakeDistances={onBrake}
         />
       )}
     </Section>

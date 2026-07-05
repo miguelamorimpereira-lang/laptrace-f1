@@ -171,3 +171,97 @@ export function pointAtFraction(
   const t = segLen > 0 ? (target - cumLen[i]) / segLen : 0;
   return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
 }
+
+export function pointAtDistance(
+  path: TrackPath,
+  distanceMeters: number,
+): { x: number; y: number } | null {
+  if (path.totalLen <= 0) return null;
+  const distanceKm = ((((distanceMeters / 1000) % path.totalLen) + path.totalLen) % path.totalLen);
+  return pointAtFraction(path, distanceKm / path.totalLen);
+}
+
+function circularKmDistance(a: number, b: number, total: number): number {
+  const direct = Math.abs(a - b);
+  return Math.min(direct, total - direct);
+}
+
+function previousDistanceKm(distance: number, total: number, lookback = 0.1): number {
+  return (distance - lookback + total) % total;
+}
+
+function cornerEntryCandidates(path: TrackPath): number[] {
+  const { points, cumLen, totalLen } = path;
+  if (points.length < 5 || totalLen <= 0) return [];
+
+  const scored: { d: number; score: number }[] = [];
+  for (let i = 2; i < points.length - 2; i++) {
+    let before = i - 1;
+    while (before > 0 && cumLen[i] - cumLen[before] < 0.08) before--;
+    let after = i + 1;
+    while (after < points.length - 1 && cumLen[after] - cumLen[i] < 0.08) after++;
+
+    const a = points[before];
+    const b = points[i];
+    const c = points[after];
+    const v1 = { x: b.x - a.x, y: b.y - a.y };
+    const v2 = { x: c.x - b.x, y: c.y - b.y };
+    const l1 = Math.hypot(v1.x, v1.y);
+    const l2 = Math.hypot(v2.x, v2.y);
+    if (l1 === 0 || l2 === 0) continue;
+
+    const dot = (v1.x * v2.x + v1.y * v2.y) / (l1 * l2);
+    const angle = Math.acos(Math.max(-1, Math.min(1, dot)));
+    if (angle > 0.22) scored.push({ d: cumLen[i], score: angle });
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  const picked: number[] = [];
+  for (const candidate of scored) {
+    if (picked.every((d) => circularKmDistance(d, candidate.d, totalLen) > 0.28)) {
+      picked.push(candidate.d);
+    }
+    if (picked.length >= 18) break;
+  }
+
+  return picked
+    .map((d) => previousDistanceKm(d, totalLen))
+    .sort((a, b) => a - b);
+}
+
+export function estimateTelemetryOffsetFraction(
+  path: TrackPath,
+  brakeDistancesMeters: number[],
+): number {
+  const total = path.totalLen;
+  if (total <= 0 || brakeDistancesMeters.length < 3) return 0;
+
+  const braking = [...brakeDistancesMeters]
+    .map((d) => ((d / 1000) % total + total) % total)
+    .sort((a, b) => a - b)
+    .filter((d, i, arr) => i === 0 || circularKmDistance(d, arr[i - 1], total) > 0.22)
+    .slice(0, 12);
+  const targets = cornerEntryCandidates(path);
+  if (braking.length < 3 || targets.length < 3) return 0;
+
+  let bestOffset = 0;
+  let bestScore = Infinity;
+  const step = 0.025;
+  for (let offset = 0; offset < total; offset += step) {
+    let score = 0;
+    for (const d of braking) {
+      const adjusted = (d + offset) % total;
+      const nearest = Math.min(...targets.map((target) => circularKmDistance(adjusted, target, total)));
+      score += nearest * nearest;
+    }
+    score /= braking.length;
+    if (score < bestScore) {
+      bestScore = score;
+      bestOffset = offset;
+    }
+  }
+
+  // Ignore tiny noise so tracks whose geometry already starts at the timing line
+  // keep the published start/finish location.
+  return bestOffset < 0.05 || total - bestOffset < 0.05 ? 0 : bestOffset / total;
+}

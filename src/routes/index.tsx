@@ -10,6 +10,7 @@ import { latestNewsQuery } from "@/lib/news.functions";
 import { Section, ErrorBox, Spinner } from "@/components/ui-bits";
 import { NewsFeed } from "@/components/NewsFeed";
 import { SeasonSelect } from "@/components/SeasonSelect";
+import { RaceCard } from "@/components/RaceCard";
 import { useI18n } from "@/lib/i18n";
 import logo from "@/assets/lap-trace-f1-logo.png.asset.json";
 
@@ -57,7 +58,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { season } = Route.useLoaderData();
   const navigate = useNavigate();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const { data: drivers } = useSuspenseQuery(driverStandingsQuery(season));
   const { data: constructors } = useSuspenseQuery(constructorStandingsQuery(season));
   const { data: races } = useSuspenseQuery(racesQuery(season));
@@ -72,7 +73,7 @@ function Home() {
   const leader = drivers[0];
 
   return (
-    <main className="mx-auto max-w-6xl space-y-10 px-4 py-8">
+    <main className="mx-auto max-w-6xl space-y-12 px-4 py-8">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-8">
         <div
@@ -148,7 +149,7 @@ function Home() {
       </Section>
 
       {/* Calendar (main) + standings (sidebar) */}
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+      <div className="grid items-start gap-8 lg:grid-cols-[1fr_360px]">
         <Section
           title={t("section.race_calendar")}
           action={
@@ -161,43 +162,11 @@ function Home() {
             </Link>
           }
         >
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid auto-rows-fr gap-3 sm:grid-cols-2">
             {races.map((r) => {
               const done = timeOf(r) <= now;
               return (
-                <Link
-                  key={r.round}
-                  to="/races/$round"
-                  params={{ round: r.round }}
-                  search={{ season }}
-                  className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
-                >
-                  <div className="flex items-start justify-between">
-                    <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                      {t("race.round", { n: r.round })}
-                    </span>
-                    <span
-                      className={`font-mono text-[10px] uppercase tracking-widest ${
-                        done ? "text-muted-foreground" : "text-brand-blue"
-                      }`}
-                    >
-                      {done ? t("race.finished") : t("race.upcoming")}
-                    </span>
-                  </div>
-                  <div className="mt-3">
-                    <p className="font-semibold leading-tight">{r.raceName}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {r.Circuit.Location.locality}, {r.Circuit.Location.country}
-                    </p>
-                  </div>
-                  <p className="mt-3 font-mono text-xs text-muted-foreground">
-                    {new Date(r.date).toLocaleDateString(locale, {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
-                </Link>
+                <RaceCard key={r.round} race={r} season={season} done={done} />
               );
             })}
           </div>
