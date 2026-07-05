@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import {
   sessionDriversQuery,
@@ -42,6 +42,7 @@ export function TelemetrySection({
   emptyNote,
   onHoverDistance,
   onMaxDistance,
+  onBrakeDistances,
 }: {
   session: OF1Session | null | undefined;
   sessionError?: Error | null;
@@ -50,6 +51,7 @@ export function TelemetrySection({
   emptyNote?: string;
   onHoverDistance?: (distance: number | null) => void;
   onMaxDistance?: (max: number) => void;
+  onBrakeDistances?: (distances: number[]) => void;
 }) {
   const driversQ = useQuery(sessionDriversQuery(session?.session_key));
 
@@ -108,17 +110,6 @@ export function TelemetrySection({
     }),
   });
 
-  const fatal = sessionError ?? driversQ.error;
-  if (fatal) return <Note>{(fatal as Error).message}</Note>;
-
-  if (sessionLoading || (session && driversQ.isLoading)) {
-    return <Spinner label="Loading telemetry…" />;
-  }
-
-  if (!session) {
-    return <Note>{emptyNote ?? "No telemetry session could be matched to this weekend."}</Note>;
-  }
-
   const series: TelemetryDriverSeries[] = [];
   let anyLoading = false;
   let telemetryError: string | null = null;
@@ -133,6 +124,22 @@ export function TelemetrySection({
   });
 
   const merged = mergeTelemetry(series);
+
+  const brakeDistances = useMemo(() => extractBrakeZones(series), [series]);
+  useEffect(() => {
+    onBrakeDistances?.(brakeDistances);
+  }, [brakeDistances, onBrakeDistances]);
+
+  const fatal = sessionError ?? driversQ.error;
+  if (fatal) return <Note>{(fatal as Error).message}</Note>;
+
+  if (sessionLoading || (session && driversQ.isLoading)) {
+    return <Spinner label="Loading telemetry…" />;
+  }
+
+  if (!session) {
+    return <Note>{emptyNote ?? "No telemetry session could be matched to this weekend."}</Note>;
+  }
 
   const lapLabels = activeIds
     .map((id, i) => {
@@ -195,4 +202,25 @@ export function TelemetrySection({
       )}
     </div>
   );
+}
+
+function extractBrakeZones(series: TelemetryDriverSeries[]): number[] {
+  const zones: number[] = [];
+  for (const s of series) {
+    let lastZone = -Infinity;
+    for (let i = 1; i < s.samples.length; i++) {
+      const prev = s.samples[i - 1];
+      const cur = s.samples[i];
+      const startsBraking = prev.brake < 50 && cur.brake >= 50;
+      if (startsBraking && cur.distance > 80 && cur.speed > 100 && cur.distance - lastZone > 260) {
+        zones.push(cur.distance);
+        lastZone = cur.distance;
+      }
+    }
+  }
+
+  return zones
+    .sort((a, b) => a - b)
+    .filter((d, i, arr) => i === 0 || Math.abs(d - arr[i - 1]) > 180)
+    .slice(0, 14);
 }

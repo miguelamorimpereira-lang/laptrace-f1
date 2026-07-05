@@ -4,6 +4,8 @@ import {
   matchCircuit,
   buildTrackPath,
   pointAtFraction,
+  pointAtDistance,
+  estimateTelemetryOffsetFraction,
 } from "@/lib/circuits";
 import { Spinner } from "@/components/ui-bits";
 
@@ -22,6 +24,7 @@ export function TrackMap({
   positionFraction,
   hoverDistance,
   maxDistance,
+  brakeDistances,
 }: {
   lat?: string;
   long?: string;
@@ -32,6 +35,8 @@ export function TrackMap({
   hoverDistance?: number | null;
   /** Lap length in metres, for the readout. */
   maxDistance?: number;
+  /** Brake-zone distances from telemetry, used to calibrate the timing-line offset. */
+  brakeDistances?: number[];
 }) {
   const { data, isLoading, error } = useQuery(circuitsQuery());
 
@@ -49,11 +54,15 @@ export function TrackMap({
   }
 
   const path = buildTrackPath(feature);
-  const start = path.points.length > 0;
-  const startPoint = path.points[0];
+  const telemetryOffset = estimateTelemetryOffsetFraction(path, brakeDistances ?? []);
+  const startPoint = pointAtFraction(path, telemetryOffset);
 
   const marker =
-    positionFraction != null ? pointAtFraction(path, positionFraction) : null;
+    hoverDistance != null
+      ? pointAtDistance(path, hoverDistance + telemetryOffset * path.totalLen * 1000)
+      : positionFraction != null
+        ? pointAtFraction(path, positionFraction + telemetryOffset)
+        : null;
 
   return (
     <div className="rounded-xl border border-border bg-card p-3">
@@ -83,15 +92,18 @@ export function TrackMap({
           strokeLinejoin="round"
           strokeLinecap="round"
         />
-        {start && startPoint && (
-          <circle
-            cx={startPoint.x}
-            cy={startPoint.y}
-            r={14}
-            fill="var(--background)"
-            stroke="var(--primary)"
-            strokeWidth={6}
-          />
+        {startPoint && (
+          <g>
+            <circle
+              cx={startPoint.x}
+              cy={startPoint.y}
+              r={16}
+              fill="var(--background)"
+              stroke="var(--primary)"
+              strokeWidth={6}
+            />
+            <circle cx={startPoint.x} cy={startPoint.y} r={5} fill="var(--primary)" />
+          </g>
         )}
         {marker && (
           <>
@@ -129,6 +141,7 @@ export function TrackMap({
       {marker && hoverDistance != null && maxDistance ? (
         <p className="mt-1 text-center font-mono text-[11px] text-primary">
           {(hoverDistance / 1000).toFixed(2)} / {(maxDistance / 1000).toFixed(2)} km
+          {telemetryOffset ? " · calibrated" : ""}
         </p>
       ) : (
         <p className="mt-1 text-center font-mono text-[11px] text-muted-foreground/60">
