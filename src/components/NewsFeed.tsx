@@ -31,19 +31,19 @@ export function NewsFeed({ items }: { items: NewsItem[] }) {
   }
 
   const [featured, ...rest] = items;
-  const cards = rest.slice(0, 6);
+  const cards = rest.slice(0, 4);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+    <div className="grid items-stretch gap-4 lg:grid-cols-[1.25fr_1fr]">
       {/* Featured top story */}
       <a
         href={featured.link}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative block overflow-hidden rounded-xl border border-border bg-card"
+        className="group relative block min-h-[360px] overflow-hidden rounded-xl border border-border bg-card lg:min-h-[430px]"
       >
         {featured.image ? (
-          <div className="relative aspect-[16/9] w-full overflow-hidden">
+          <div className="relative h-full min-h-[360px] w-full overflow-hidden lg:min-h-[430px]">
             <img
               src={featured.image}
               alt=""
@@ -88,10 +88,10 @@ export function NewsFeed({ items }: { items: NewsItem[] }) {
             href={n.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
+            className="group grid min-h-[208px] grid-rows-[auto_1fr] overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
           >
             {n.image && (
-              <div className="aspect-[16/9] w-full overflow-hidden">
+              <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
                 <img
                   src={n.image}
                   alt=""
@@ -100,7 +100,7 @@ export function NewsFeed({ items }: { items: NewsItem[] }) {
                 />
               </div>
             )}
-            <div className="flex-1 p-3">
+            <div className="flex min-h-[86px] flex-col justify-between p-3">
               <p className="line-clamp-2 text-sm font-semibold leading-snug">
                 {n.title}
               </p>

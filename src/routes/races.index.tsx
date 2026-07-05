@@ -1,8 +1,9 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { seasonsQuery, racesQuery } from "@/lib/jolpica";
 import { ErrorBox, Spinner } from "@/components/ui-bits";
 import { SeasonSelect } from "@/components/SeasonSelect";
+import { RaceCard } from "@/components/RaceCard";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/races/")({
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/races/")({
 function Races() {
   const { season } = Route.useLoaderData();
   const navigate = useNavigate();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const { data: races } = useSuspenseQuery(racesQuery(season));
   const now = Date.now();
 
@@ -51,44 +52,12 @@ function Races() {
         />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {races.map((r) => {
           const done =
             new Date(`${r.date}T${r.time ?? "00:00:00Z"}`).getTime() <= now;
           return (
-            <Link
-              key={r.round}
-              to="/races/$round"
-              params={{ round: r.round }}
-              search={{ season }}
-              className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
-            >
-              <div className="flex items-start justify-between">
-                <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                  {t("race.round", { n: r.round })}
-                </span>
-                <span
-                  className={`font-mono text-[10px] uppercase tracking-widest ${
-                    done ? "text-muted-foreground" : "text-brand-blue"
-                  }`}
-                >
-                  {done ? t("race.finished") : t("race.upcoming")}
-                </span>
-              </div>
-              <div className="mt-3">
-                <p className="font-semibold leading-tight">{r.raceName}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {r.Circuit.Location.locality}, {r.Circuit.Location.country}
-                </p>
-              </div>
-              <p className="mt-3 font-mono text-xs text-muted-foreground">
-                {new Date(r.date).toLocaleDateString(locale, {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </p>
-            </Link>
+            <RaceCard key={r.round} race={r} season={season} done={done} />
           );
         })}
       </div>
