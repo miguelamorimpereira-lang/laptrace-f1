@@ -252,3 +252,60 @@ function Stat({
     </div>
   );
 }
+
+const FEATURE_ICONS: Record<string, JSX.Element> = {
+  news: (
+    <path d="M4 5h13v14H6a2 2 0 0 1-2-2V5Zm13 0h2a1 1 0 0 1 1 1v11a2 2 0 0 1-2 2M7 9h7M7 13h7M7 17h4" />
+  ),
+  calendar: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 9h18M8 3v4M16 3v4" />
+    </>
+  ),
+  telemetry: <path d="M4 15l4-6 3 4 3-7 3 5 3-2M4 19h16" />,
+};
+
+function Feature({
+  icon,
+  title,
+  desc,
+  accent,
+}: {
+  icon: keyof typeof FEATURE_ICONS;
+  title: string;
+  desc: string;
+  accent: "blue" | "red";
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-border bg-background/40 p-4">
+      <span
+        aria-hidden
+        className={`absolute inset-x-0 top-0 h-0.5 ${
+          accent === "blue" ? "bg-brand-blue" : "bg-brand-red"
+        }`}
+      />
+      <div
+        className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+          accent === "blue"
+            ? "bg-brand-blue/10 text-brand-blue"
+            : "bg-brand-red/10 text-brand-red"
+        }`}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-5 w-5"
+        >
+          {FEATURE_ICONS[icon]}
+        </svg>
+      </div>
+      <p className="mt-3 text-sm font-semibold">{title}</p>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{desc}</p>
+    </div>
+  );
+}
