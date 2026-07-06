@@ -54,14 +54,13 @@ export function TrackMap({
   }
 
   const path = buildTrackPath(feature);
-  const telemetryOffset = estimateTelemetryOffsetFraction(path, brakeDistances ?? []);
-  const startPoint = pointAtFraction(path, telemetryOffset);
+  const startPoint = pointAtFraction(path, 0);
 
   const marker =
     hoverDistance != null
-      ? pointAtDistance(path, hoverDistance + telemetryOffset * path.totalLen * 1000)
+      ? pointAtDistance(path, hoverDistance)
       : positionFraction != null
-        ? pointAtFraction(path, positionFraction + telemetryOffset)
+        ? pointAtFraction(path, positionFraction)
         : null;
 
   return (
