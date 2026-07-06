@@ -104,32 +104,54 @@ function Home() {
             className="hidden h-28 w-auto self-center sm:block lg:h-36"
           />
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Stat
-            accent="blue"
-            label={t("stat.leader")}
-            value={leader ? `${leader.Driver.code}` : "—"}
-            sub={leader ? `${leader.points} ${t("unit.pts")}` : ""}
-          />
-          <Stat
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <Feature
             accent="red"
-            label={t("stat.top_constructor")}
-            value={constructors[0]?.Constructor.name ?? "—"}
-            sub={constructors[0] ? `${constructors[0].points} ${t("unit.pts")}` : ""}
+            icon="news"
+            title={t("home.feat_news.t")}
+            desc={t("home.feat_news.d")}
           />
-          <Stat
+          <Feature
             accent="blue"
-            label={t("stat.rounds")}
-            value={String(races.length)}
-            sub={t("stat.this_season")}
+            icon="calendar"
+            title={t("home.feat_calendar.t")}
+            desc={t("home.feat_calendar.d")}
           />
-          <Stat
+          <Feature
             accent="red"
-            label={nextRace ? t("stat.next_race") : t("stat.final_round")}
-            value={(nextRace ?? latestRace)?.Circuit.Location.country ?? "—"}
-            sub={(nextRace ?? latestRace)?.raceName ?? ""}
+            icon="telemetry"
+            title={t("home.feat_telemetry.t")}
+            desc={t("home.feat_telemetry.d")}
           />
         </div>
+      </section>
+
+      {/* Season snapshot — key championship numbers, on their own */}
+      <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Stat
+          accent="blue"
+          label={t("stat.leader")}
+          value={leader ? `${leader.Driver.code}` : "—"}
+          sub={leader ? `${leader.points} ${t("unit.pts")}` : ""}
+        />
+        <Stat
+          accent="red"
+          label={t("stat.top_constructor")}
+          value={constructors[0]?.Constructor.name ?? "—"}
+          sub={constructors[0] ? `${constructors[0].points} ${t("unit.pts")}` : ""}
+        />
+        <Stat
+          accent="blue"
+          label={t("stat.rounds")}
+          value={String(races.length)}
+          sub={t("stat.this_season")}
+        />
+        <Stat
+          accent="red"
+          label={nextRace ? t("stat.next_race") : t("stat.final_round")}
+          value={(nextRace ?? latestRace)?.Circuit.Location.country ?? "—"}
+          sub={(nextRace ?? latestRace)?.raceName ?? ""}
+        />
       </section>
 
       {/* Latest news — headline section, front and centre */}
@@ -227,6 +249,63 @@ function Stat({
       </p>
       <p className="mt-1 truncate pl-1.5 text-lg font-semibold">{value}</p>
       {sub && <p className="truncate pl-1.5 text-xs text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+const FEATURE_ICONS: Record<string, React.ReactNode> = {
+  news: (
+    <path d="M4 5h13v14H6a2 2 0 0 1-2-2V5Zm13 0h2a1 1 0 0 1 1 1v11a2 2 0 0 1-2 2M7 9h7M7 13h7M7 17h4" />
+  ),
+  calendar: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 9h18M8 3v4M16 3v4" />
+    </>
+  ),
+  telemetry: <path d="M4 15l4-6 3 4 3-7 3 5 3-2M4 19h16" />,
+};
+
+function Feature({
+  icon,
+  title,
+  desc,
+  accent,
+}: {
+  icon: keyof typeof FEATURE_ICONS;
+  title: string;
+  desc: string;
+  accent: "blue" | "red";
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-border bg-background/40 p-4">
+      <span
+        aria-hidden
+        className={`absolute inset-x-0 top-0 h-0.5 ${
+          accent === "blue" ? "bg-brand-blue" : "bg-brand-red"
+        }`}
+      />
+      <div
+        className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+          accent === "blue"
+            ? "bg-brand-blue/10 text-brand-blue"
+            : "bg-brand-red/10 text-brand-red"
+        }`}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-5 w-5"
+        >
+          {FEATURE_ICONS[icon]}
+        </svg>
+      </div>
+      <p className="mt-3 text-sm font-semibold">{title}</p>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{desc}</p>
     </div>
   );
 }

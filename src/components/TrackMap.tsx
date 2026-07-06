@@ -5,7 +5,6 @@ import {
   buildTrackPath,
   pointAtFraction,
   pointAtDistance,
-  estimateTelemetryOffsetFraction,
 } from "@/lib/circuits";
 import { Spinner } from "@/components/ui-bits";
 
@@ -54,14 +53,13 @@ export function TrackMap({
   }
 
   const path = buildTrackPath(feature);
-  const telemetryOffset = estimateTelemetryOffsetFraction(path, brakeDistances ?? []);
-  const startPoint = pointAtFraction(path, telemetryOffset);
+  const startPoint = pointAtFraction(path, 0);
 
   const marker =
     hoverDistance != null
-      ? pointAtDistance(path, hoverDistance + telemetryOffset * path.totalLen * 1000)
+      ? pointAtDistance(path, hoverDistance)
       : positionFraction != null
-        ? pointAtFraction(path, positionFraction + telemetryOffset)
+        ? pointAtFraction(path, positionFraction)
         : null;
 
   return (
@@ -141,7 +139,7 @@ export function TrackMap({
       {marker && hoverDistance != null && maxDistance ? (
         <p className="mt-1 text-center font-mono text-[11px] text-primary">
           {(hoverDistance / 1000).toFixed(2)} / {(maxDistance / 1000).toFixed(2)} km
-          {telemetryOffset ? " · calibrated" : ""}
+
         </p>
       ) : (
         <p className="mt-1 text-center font-mono text-[11px] text-muted-foreground/60">

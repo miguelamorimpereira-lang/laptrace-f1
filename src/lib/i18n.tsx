@@ -38,6 +38,15 @@ const en: Dict = {
   "home.title": "F1 news, the calendar, and every lap — visualized.",
   "home.subtitle":
     "Catch the latest headlines, then pick a Grand Prix to explore race and qualifying results, lap-time analysis and in-car telemetry.",
+  "home.feat_news.t": "Latest News",
+  "home.feat_news.d": "Breaking headlines from across the F1 paddock, refreshed continuously.",
+  "home.feat_calendar.t": "Full Calendar",
+  "home.feat_calendar.d": "Every round of the season with dates, circuits and host countries.",
+  "home.feat_telemetry.t": "Lap Telemetry",
+  "home.feat_telemetry.d": "Compare drivers' fastest laps with speed, throttle, brake and RPM traces.",
+  "section.season_snapshot": "Season Snapshot",
+
+
 
   "stat.leader": "Championship Leader",
   "stat.top_constructor": "Top Constructor",
@@ -92,6 +101,15 @@ const pt: Dict = {
   "home.title": "Notícias de F1, o calendário e cada volta — visualizados.",
   "home.subtitle":
     "Acompanhe as últimas notícias e depois escolha um Grande Prémio para explorar resultados de corrida e qualificação, análise de tempos por volta e telemetria de bordo.",
+  "home.feat_news.t": "Últimas notícias",
+  "home.feat_news.d": "Manchetes de última hora de todo o paddock da F1, atualizadas continuamente.",
+  "home.feat_calendar.t": "Calendário completo",
+  "home.feat_calendar.d": "Cada ronda da temporada com datas, circuitos e países anfitriões.",
+  "home.feat_telemetry.t": "Telemetria de volta",
+  "home.feat_telemetry.d": "Compare as voltas mais rápidas com velocidade, acelerador, travão e RPM.",
+  "section.season_snapshot": "Resumo da temporada",
+
+
 
   "stat.leader": "Líder do Campeonato",
   "stat.top_constructor": "Melhor Construtor",
@@ -146,6 +164,15 @@ const sv: Dict = {
   "home.title": "F1-nyheter, kalendern och varje varv — visualiserat.",
   "home.subtitle":
     "Håll koll på de senaste rubrikerna och välj sedan ett Grand Prix för att utforska lopp- och kvalresultat, varvtidsanalys och telemetri från bilen.",
+  "home.feat_news.t": "Senaste nytt",
+  "home.feat_news.d": "Färska rubriker från hela F1-depån, uppdateras löpande.",
+  "home.feat_calendar.t": "Hela kalendern",
+  "home.feat_calendar.d": "Varje deltävling med datum, banor och värdländer.",
+  "home.feat_telemetry.t": "Varvtelemetri",
+  "home.feat_telemetry.d": "Jämför snabbaste varv med hastighet, gas, broms och varvtal.",
+  "section.season_snapshot": "Säsongsöversikt",
+
+
 
   "stat.leader": "Mästerskapsledare",
   "stat.top_constructor": "Bästa stall",
@@ -200,6 +227,15 @@ const fr: Dict = {
   "home.title": "L'actu F1, le calendrier et chaque tour — en images.",
   "home.subtitle":
     "Suivez les dernières actualités, puis choisissez un Grand Prix pour explorer les résultats de course et de qualification, l'analyse des temps au tour et la télémétrie embarquée.",
+  "home.feat_news.t": "Dernières actus",
+  "home.feat_news.d": "Les titres à la une de tout le paddock F1, actualisés en continu.",
+  "home.feat_calendar.t": "Calendrier complet",
+  "home.feat_calendar.d": "Chaque manche de la saison avec dates, circuits et pays hôtes.",
+  "home.feat_telemetry.t": "Télémétrie",
+  "home.feat_telemetry.d": "Comparez les meilleurs tours : vitesse, accélérateur, frein et régime moteur.",
+  "section.season_snapshot": "Aperçu de la saison",
+
+
 
   "stat.leader": "Leader du championnat",
   "stat.top_constructor": "Meilleure écurie",
@@ -254,6 +290,15 @@ const es: Dict = {
   "home.title": "Noticias de F1, el calendario y cada vuelta — visualizados.",
   "home.subtitle":
     "Sigue los últimos titulares y luego elige un Gran Premio para explorar resultados de carrera y clasificación, análisis de tiempos por vuelta y telemetría de a bordo.",
+  "home.feat_news.t": "Últimas noticias",
+  "home.feat_news.d": "Titulares de última hora de todo el paddock de F1, en constante actualización.",
+  "home.feat_calendar.t": "Calendario completo",
+  "home.feat_calendar.d": "Cada ronda de la temporada con fechas, circuitos y países anfitriones.",
+  "home.feat_telemetry.t": "Telemetría de vuelta",
+  "home.feat_telemetry.d": "Compara las vueltas rápidas con velocidad, acelerador, freno y RPM.",
+  "section.season_snapshot": "Resumen de la temporada",
+
+
 
   "stat.leader": "Líder del campeonato",
   "stat.top_constructor": "Mejor escudería",
@@ -308,6 +353,15 @@ const de: Dict = {
   "home.title": "F1-News, der Kalender und jede Runde — visualisiert.",
   "home.subtitle":
     "Verfolgen Sie die aktuellen Schlagzeilen und wählen Sie dann einen Grand Prix, um Rennen- und Qualifyingergebnisse, Rundenzeitanalysen und Bord-Telemetrie zu erkunden.",
+  "home.feat_news.t": "Aktuelle News",
+  "home.feat_news.d": "Schlagzeilen aus dem gesamten F1-Fahrerlager, laufend aktualisiert.",
+  "home.feat_calendar.t": "Voller Kalender",
+  "home.feat_calendar.d": "Jedes Rennen der Saison mit Datum, Strecke und Gastgeberland.",
+  "home.feat_telemetry.t": "Runden-Telemetrie",
+  "home.feat_telemetry.d": "Vergleichen Sie die schnellsten Runden mit Geschwindigkeit, Gas, Bremse und Drehzahl.",
+  "section.season_snapshot": "Saison-Überblick",
+
+
 
   "stat.leader": "WM-Führender",
   "stat.top_constructor": "Bestes Team",
