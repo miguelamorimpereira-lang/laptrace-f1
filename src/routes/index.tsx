@@ -253,7 +253,7 @@ function Stat({
   );
 }
 
-const FEATURE_ICONS: Record<string, JSX.Element> = {
+const FEATURE_ICONS: Record<string, React.ReactNode> = {
   news: (
     <path d="M4 5h13v14H6a2 2 0 0 1-2-2V5Zm13 0h2a1 1 0 0 1 1 1v11a2 2 0 0 1-2 2M7 9h7M7 13h7M7 17h4" />
   ),
