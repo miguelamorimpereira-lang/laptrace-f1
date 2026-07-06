@@ -140,7 +140,7 @@ export function TrackMap({
       {marker && hoverDistance != null && maxDistance ? (
         <p className="mt-1 text-center font-mono text-[11px] text-primary">
           {(hoverDistance / 1000).toFixed(2)} / {(maxDistance / 1000).toFixed(2)} km
-          {telemetryOffset ? " · calibrated" : ""}
+
         </p>
       ) : (
         <p className="mt-1 text-center font-mono text-[11px] text-muted-foreground/60">
