@@ -38,6 +38,15 @@ const en: Dict = {
   "home.title": "F1 news, the calendar, and every lap — visualized.",
   "home.subtitle":
     "Catch the latest headlines, then pick a Grand Prix to explore race and qualifying results, lap-time analysis and in-car telemetry.",
+  "home.feat_news.t": "Latest News",
+  "home.feat_news.d": "Breaking headlines from across the F1 paddock, refreshed continuously.",
+  "home.feat_calendar.t": "Full Calendar",
+  "home.feat_calendar.d": "Every round of the season with dates, circuits and host countries.",
+  "home.feat_telemetry.t": "Lap Telemetry",
+  "home.feat_telemetry.d": "Compare drivers' fastest laps with speed, throttle, brake and RPM traces.",
+  "section.season_snapshot": "Season Snapshot",
+
+
 
   "stat.leader": "Championship Leader",
   "stat.top_constructor": "Top Constructor",
