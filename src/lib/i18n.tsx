@@ -308,6 +308,15 @@ const de: Dict = {
   "home.title": "F1-News, der Kalender und jede Runde — visualisiert.",
   "home.subtitle":
     "Verfolgen Sie die aktuellen Schlagzeilen und wählen Sie dann einen Grand Prix, um Rennen- und Qualifyingergebnisse, Rundenzeitanalysen und Bord-Telemetrie zu erkunden.",
+  "home.feat_news.t": "Aktuelle News",
+  "home.feat_news.d": "Schlagzeilen aus dem gesamten F1-Fahrerlager, laufend aktualisiert.",
+  "home.feat_calendar.t": "Voller Kalender",
+  "home.feat_calendar.d": "Jedes Rennen der Saison mit Datum, Strecke und Gastgeberland.",
+  "home.feat_telemetry.t": "Runden-Telemetrie",
+  "home.feat_telemetry.d": "Vergleichen Sie die schnellsten Runden mit Geschwindigkeit, Gas, Bremse und Drehzahl.",
+  "section.season_snapshot": "Saison-Überblick",
+
+
 
   "stat.leader": "WM-Führender",
   "stat.top_constructor": "Bestes Team",
