@@ -254,6 +254,15 @@ const es: Dict = {
   "home.title": "Noticias de F1, el calendario y cada vuelta — visualizados.",
   "home.subtitle":
     "Sigue los últimos titulares y luego elige un Gran Premio para explorar resultados de carrera y clasificación, análisis de tiempos por vuelta y telemetría de a bordo.",
+  "home.feat_news.t": "Últimas noticias",
+  "home.feat_news.d": "Titulares de última hora de todo el paddock de F1, en constante actualización.",
+  "home.feat_calendar.t": "Calendario completo",
+  "home.feat_calendar.d": "Cada ronda de la temporada con fechas, circuitos y países anfitriones.",
+  "home.feat_telemetry.t": "Telemetría de vuelta",
+  "home.feat_telemetry.d": "Compara las vueltas rápidas con velocidad, acelerador, freno y RPM.",
+  "section.season_snapshot": "Resumen de la temporada",
+
+
 
   "stat.leader": "Líder del campeonato",
   "stat.top_constructor": "Mejor escudería",
