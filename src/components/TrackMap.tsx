@@ -5,7 +5,6 @@ import {
   buildTrackPath,
   pointAtFraction,
   pointAtDistance,
-  estimateTelemetryOffsetFraction,
 } from "@/lib/circuits";
 import { Spinner } from "@/components/ui-bits";
 
