@@ -146,6 +146,15 @@ const sv: Dict = {
   "home.title": "F1-nyheter, kalendern och varje varv — visualiserat.",
   "home.subtitle":
     "Håll koll på de senaste rubrikerna och välj sedan ett Grand Prix för att utforska lopp- och kvalresultat, varvtidsanalys och telemetri från bilen.",
+  "home.feat_news.t": "Senaste nytt",
+  "home.feat_news.d": "Färska rubriker från hela F1-depån, uppdateras löpande.",
+  "home.feat_calendar.t": "Hela kalendern",
+  "home.feat_calendar.d": "Varje deltävling med datum, banor och värdländer.",
+  "home.feat_telemetry.t": "Varvtelemetri",
+  "home.feat_telemetry.d": "Jämför snabbaste varv med hastighet, gas, broms och varvtal.",
+  "section.season_snapshot": "Säsongsöversikt",
+
+
 
   "stat.leader": "Mästerskapsledare",
   "stat.top_constructor": "Bästa stall",
