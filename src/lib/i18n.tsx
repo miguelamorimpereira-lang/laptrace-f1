@@ -92,6 +92,15 @@ const pt: Dict = {
   "home.title": "Notícias de F1, o calendário e cada volta — visualizados.",
   "home.subtitle":
     "Acompanhe as últimas notícias e depois escolha um Grande Prémio para explorar resultados de corrida e qualificação, análise de tempos por volta e telemetria de bordo.",
+  "home.feat_news.t": "Últimas notícias",
+  "home.feat_news.d": "Manchetes de última hora de todo o paddock da F1, atualizadas continuamente.",
+  "home.feat_calendar.t": "Calendário completo",
+  "home.feat_calendar.d": "Cada ronda da temporada com datas, circuitos e países anfitriões.",
+  "home.feat_telemetry.t": "Telemetria de volta",
+  "home.feat_telemetry.d": "Compare as voltas mais rápidas com velocidade, acelerador, travão e RPM.",
+  "section.season_snapshot": "Resumo da temporada",
+
+
 
   "stat.leader": "Líder do Campeonato",
   "stat.top_constructor": "Melhor Construtor",
