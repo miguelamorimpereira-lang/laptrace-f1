@@ -200,6 +200,15 @@ const fr: Dict = {
   "home.title": "L'actu F1, le calendrier et chaque tour — en images.",
   "home.subtitle":
     "Suivez les dernières actualités, puis choisissez un Grand Prix pour explorer les résultats de course et de qualification, l'analyse des temps au tour et la télémétrie embarquée.",
+  "home.feat_news.t": "Dernières actus",
+  "home.feat_news.d": "Les titres à la une de tout le paddock F1, actualisés en continu.",
+  "home.feat_calendar.t": "Calendrier complet",
+  "home.feat_calendar.d": "Chaque manche de la saison avec dates, circuits et pays hôtes.",
+  "home.feat_telemetry.t": "Télémétrie",
+  "home.feat_telemetry.d": "Comparez les meilleurs tours : vitesse, accélérateur, frein et régime moteur.",
+  "section.season_snapshot": "Aperçu de la saison",
+
+
 
   "stat.leader": "Leader du championnat",
   "stat.top_constructor": "Meilleure écurie",
