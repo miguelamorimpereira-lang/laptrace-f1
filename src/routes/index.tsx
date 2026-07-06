@@ -104,32 +104,54 @@ function Home() {
             className="hidden h-28 w-auto self-center sm:block lg:h-36"
           />
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Stat
-            accent="blue"
-            label={t("stat.leader")}
-            value={leader ? `${leader.Driver.code}` : "—"}
-            sub={leader ? `${leader.points} ${t("unit.pts")}` : ""}
-          />
-          <Stat
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <Feature
             accent="red"
-            label={t("stat.top_constructor")}
-            value={constructors[0]?.Constructor.name ?? "—"}
-            sub={constructors[0] ? `${constructors[0].points} ${t("unit.pts")}` : ""}
+            icon="news"
+            title={t("home.feat_news.t")}
+            desc={t("home.feat_news.d")}
           />
-          <Stat
+          <Feature
             accent="blue"
-            label={t("stat.rounds")}
-            value={String(races.length)}
-            sub={t("stat.this_season")}
+            icon="calendar"
+            title={t("home.feat_calendar.t")}
+            desc={t("home.feat_calendar.d")}
           />
-          <Stat
+          <Feature
             accent="red"
-            label={nextRace ? t("stat.next_race") : t("stat.final_round")}
-            value={(nextRace ?? latestRace)?.Circuit.Location.country ?? "—"}
-            sub={(nextRace ?? latestRace)?.raceName ?? ""}
+            icon="telemetry"
+            title={t("home.feat_telemetry.t")}
+            desc={t("home.feat_telemetry.d")}
           />
         </div>
+      </section>
+
+      {/* Season snapshot — key championship numbers, on their own */}
+      <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Stat
+          accent="blue"
+          label={t("stat.leader")}
+          value={leader ? `${leader.Driver.code}` : "—"}
+          sub={leader ? `${leader.points} ${t("unit.pts")}` : ""}
+        />
+        <Stat
+          accent="red"
+          label={t("stat.top_constructor")}
+          value={constructors[0]?.Constructor.name ?? "—"}
+          sub={constructors[0] ? `${constructors[0].points} ${t("unit.pts")}` : ""}
+        />
+        <Stat
+          accent="blue"
+          label={t("stat.rounds")}
+          value={String(races.length)}
+          sub={t("stat.this_season")}
+        />
+        <Stat
+          accent="red"
+          label={nextRace ? t("stat.next_race") : t("stat.final_round")}
+          value={(nextRace ?? latestRace)?.Circuit.Location.country ?? "—"}
+          sub={(nextRace ?? latestRace)?.raceName ?? ""}
+        />
       </section>
 
       {/* Latest news — headline section, front and centre */}
