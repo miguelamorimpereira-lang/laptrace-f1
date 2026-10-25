@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { seasonSearch } from "@/lib/search";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   seasonsQuery,

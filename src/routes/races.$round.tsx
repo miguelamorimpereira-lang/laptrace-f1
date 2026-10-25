@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { seasonSearch } from "@/lib/search";
 import { useCallback, useState } from "react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
