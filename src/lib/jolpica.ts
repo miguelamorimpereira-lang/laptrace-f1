@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 const BASE = "https://api.jolpi.ca/ergast/f1";
-const MIN_INTERVAL = 250; // ms between upstream calls (~4 req/s, under the cap)
+const MIN_INTERVAL = 120; // ms between upstream calls (well under the 5 req/s cap)
 const MAX_ATTEMPTS = 6;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
