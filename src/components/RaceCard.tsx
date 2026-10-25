@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import type { Race } from "@/lib/jolpica";
-import { countryFlagBackground } from "@/lib/flags";
 import { useI18n } from "@/lib/i18n";
 
 export function RaceCard({
@@ -15,7 +14,6 @@ export function RaceCard({
   className?: string;
 }) {
   const { t, locale } = useI18n();
-  const flag = countryFlagBackground(race.Circuit.Location.country);
 
   return (
     <Link
@@ -24,14 +22,6 @@ export function RaceCard({
       search={{ season }}
       className={`group relative flex min-h-[184px] flex-col overflow-hidden rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50 ${className}`}
     >
-      {flag && (
-        <span
-          aria-hidden
-          className="absolute inset-0 bg-cover bg-center opacity-45 saturate-[1.25] transition-opacity group-hover:opacity-60 dark:opacity-50 dark:group-hover:opacity-70"
-          style={{ backgroundImage: flag }}
-        />
-      )}
-      <span aria-hidden className="absolute inset-0 bg-card/70 group-hover:bg-card/60 dark:bg-card/65 dark:group-hover:bg-card/55" />
       <span
         aria-hidden
         className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-primary to-brand-red"

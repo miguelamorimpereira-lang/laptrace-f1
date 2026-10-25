@@ -1,4 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
+import { seasonSearch } from "@/lib/search";
 import { useCallback, useState } from "react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -34,17 +40,28 @@ function isTab(v: unknown): v is SessionKind {
 }
 
 export const Route = createFileRoute("/races/$round")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    season: s.season == null || s.season === "" ? undefined : String(s.season),
-    tab: isTab(s.tab) ? s.tab : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>) => {
+    const out: { season?: string; tab?: SessionKind } = {};
+    const season = seasonSearch(s).season;
+    if (season) out.season = season;
+    if (isTab(s.tab)) out.tab = s.tab;
+    return out;
+  },
   loaderDeps: ({ search }) => ({ season: search.season }),
   loader: async ({ context, deps, params }) => {
     const seasons = await context.queryClient.ensureQueryData(seasonsQuery());
     const season = deps.season ?? seasons[0];
     await context.queryClient.ensureQueryData(racesQuery(season));
-    context.queryClient.ensureQueryData(raceResultsQuery(season, params.round));
-    context.queryClient.ensureQueryData(lapsQuery(season, params.round));
+    // Prefetched in the background: a failure here must never take the route
+    // down. Dropping the failed entry lets the component retry from scratch.
+    const resultsQ = raceResultsQuery(season, params.round);
+    const lapsQ = lapsQuery(season, params.round);
+    context.queryClient.ensureQueryData(resultsQ).catch(() => {
+      context.queryClient.removeQueries({ queryKey: resultsQ.queryKey });
+    });
+    context.queryClient.ensureQueryData(lapsQ).catch(() => {
+      context.queryClient.removeQueries({ queryKey: lapsQ.queryKey });
+    });
     return { season };
   },
   head: () => ({
@@ -58,9 +75,9 @@ export const Route = createFileRoute("/races/$round")({
     ],
   }),
   pendingComponent: () => <Spinner />,
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }: ErrorComponentProps) => (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <ErrorBox message={error.message} />
+      <ErrorBox message={error instanceof Error ? error.message : String(error)} />
     </div>
   ),
   notFoundComponent: () => (
@@ -288,7 +305,10 @@ function RaceTab({
   onBrake: (distances: number[]) => void;
 }) {
   const { data: race } = useSuspenseQuery(raceResultsQuery(season, round));
-  const { data: laps } = useSuspenseQuery(lapsQuery(season, round));
+  // Lap timings take ~9 paged requests, so they load in the background rather
+  // than holding up the whole page.
+  const lapsQ = useQuery(lapsQuery(season, round));
+  const laps = lapsQ.data ?? [];
 
   if (!race || !race.Results) {
     return <ErrorBox message="No results available for this round yet." />;
@@ -303,12 +323,24 @@ function RaceTab({
           Fastest Lap · {fastest.Driver.code} · {fastest.FastestLap?.Time.time}
         </p>
       )}
-      <Section title="Lap Times — All Laps">
-        <LapChart laps={laps} results={results} />
-      </Section>
-      <Section title="Fastest Lap per Driver — Gap to Best">
-        <BestLapChart laps={laps} results={results} />
-      </Section>
+      {laps.length === 0 ? (
+        <Section title="Lap Times — All Laps">
+          {lapsQ.isError ? (
+            <ErrorBox message="Could not load lap timings. Please try again." />
+          ) : (
+            <Spinner />
+          )}
+        </Section>
+      ) : (
+        <>
+          <Section title="Lap Times — All Laps">
+            <LapChart laps={laps} results={results} />
+          </Section>
+          <Section title="Fastest Lap per Driver — Gap to Best">
+            <BestLapChart laps={laps} results={results} />
+          </Section>
+        </>
+      )}
       <Section title="Fastest-Lap Telemetry — Speed · RPM · Throttle · Brake · Gear">
         {year < OPENF1_MIN_SEASON ? (
           <TelemetryUnavailableNote year={year} />
