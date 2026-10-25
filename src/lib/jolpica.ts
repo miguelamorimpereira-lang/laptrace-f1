@@ -189,10 +189,17 @@ export const getLaps = async (season: string, round: string): Promise<Lap[]> => 
   let total = Infinity;
 
   while (offset < total) {
-    const data = await get<{
-      total: string;
-      RaceTable: { Races: { Laps: Lap[] }[] };
-    }>(`/${season}/${round}/laps/?limit=${PAGE}&offset=${offset}`);
+    let data: { total: string; RaceTable: { Races: { Laps: Lap[] }[] } };
+    try {
+      data = await get<typeof data>(
+        `/${season}/${round}/laps/?limit=${PAGE}&offset=${offset}`,
+      );
+    } catch (err) {
+      // Rate limited part-way through paging: keep the laps already fetched so
+      // the page still renders instead of failing outright.
+      if (byNumber.size > 0 && err instanceof JolpicaRateLimitError) break;
+      throw err;
+    }
     total = Number(data.total) || 0;
     const laps = data.RaceTable.Races[0]?.Laps ?? [];
     for (const lap of laps) {

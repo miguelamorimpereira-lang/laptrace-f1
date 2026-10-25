@@ -52,8 +52,14 @@ export const Route = createFileRoute("/races/$round")({
     const seasons = await context.queryClient.ensureQueryData(seasonsQuery());
     const season = deps.season ?? seasons[0];
     await context.queryClient.ensureQueryData(racesQuery(season));
-    context.queryClient.ensureQueryData(raceResultsQuery(season, params.round));
-    context.queryClient.ensureQueryData(lapsQuery(season, params.round));
+    // Prefetched in the background: a failure here must never take the route
+    // down — the component reads these queries itself and can retry.
+    context.queryClient
+      .ensureQueryData(raceResultsQuery(season, params.round))
+      .catch(() => {});
+    context.queryClient
+      .ensureQueryData(lapsQuery(season, params.round))
+      .catch(() => {});
     return { season };
   },
   head: () => ({
