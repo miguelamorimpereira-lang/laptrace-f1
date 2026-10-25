@@ -67,9 +67,9 @@ export const Route = createFileRoute("/races/$round")({
     ],
   }),
   pendingComponent: () => <Spinner />,
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }: ErrorComponentProps) => (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <ErrorBox message={error.message} />
+      <ErrorBox message={error instanceof Error ? error.message : String(error)} />
     </div>
   ),
   notFoundComponent: () => (
