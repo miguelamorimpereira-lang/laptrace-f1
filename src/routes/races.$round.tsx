@@ -57,10 +57,10 @@ export const Route = createFileRoute("/races/$round")({
     const resultsQ = raceResultsQuery(season, params.round);
     const lapsQ = lapsQuery(season, params.round);
     context.queryClient.ensureQueryData(resultsQ).catch(() => {
-      context.queryClient.removeQuery({ queryKey: resultsQ.queryKey });
+      context.queryClient.removeQueries({ queryKey: resultsQ.queryKey });
     });
     context.queryClient.ensureQueryData(lapsQ).catch(() => {
-      context.queryClient.removeQuery({ queryKey: lapsQ.queryKey });
+      context.queryClient.removeQueries({ queryKey: lapsQ.queryKey });
     });
     return { season };
   },
