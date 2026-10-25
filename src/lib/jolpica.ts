@@ -1,19 +1,71 @@
 import { queryOptions } from "@tanstack/react-query";
 
 const BASE = "https://api.jolpi.ca/ergast/f1";
+const MIN_INTERVAL = 250; // ms between upstream calls (~4 req/s, under the cap)
+const MAX_ATTEMPTS = 6;
 
-async function get<T>(path: string): Promise<T> {
-  for (let attempt = 0; attempt < 4; attempt++) {
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export class JolpicaRateLimitError extends Error {
+  constructor(path: string) {
+    super(`Jolpica API rate limited on ${path}`);
+    this.name = "JolpicaRateLimitError";
+  }
+}
+
+/* ---------- Upstream throttling ----------
+ * Jolpica rate limits bursts, so every call goes through one queue with a
+ * minimum spacing between requests, identical in-flight paths share a single
+ * request, and 429s back off using the server's own Retry-After hint.
+ */
+let chain: Promise<unknown> = Promise.resolve();
+let lastAt = 0;
+
+function schedule<T>(task: () => Promise<T>): Promise<T> {
+  const run = chain.then(async () => {
+    const wait = MIN_INTERVAL - (Date.now() - lastAt);
+    if (wait > 0) await sleep(wait);
+    lastAt = Date.now();
+    return task();
+  });
+  // Keep the queue alive even when a request fails.
+  chain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+const inflight = new Map<string, Promise<unknown>>();
+
+function backoffMs(res: Response, attempt: number): number {
+  const retryAfter = Number(res.headers.get("retry-after"));
+  if (Number.isFinite(retryAfter) && retryAfter > 0) {
+    return Math.min(retryAfter * 1000, 5000);
+  }
+  return Math.min(500 * 2 ** attempt, 8000);
+}
+
+async function request<T>(path: string): Promise<T> {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const res = await fetch(`${BASE}${path}`);
     if (res.status === 429) {
-      await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      await sleep(backoffMs(res, attempt));
       continue;
     }
     if (!res.ok) throw new Error(`Jolpica API error ${res.status} on ${path}`);
     const json = await res.json();
     return json.MRData as T;
   }
-  throw new Error(`Jolpica API rate limited on ${path}`);
+  throw new JolpicaRateLimitError(path);
+}
+
+async function get<T>(path: string): Promise<T> {
+  const running = inflight.get(path);
+  if (running) return running as Promise<T>;
+  const p = schedule(() => request<T>(path)).finally(() => inflight.delete(path));
+  inflight.set(path, p);
+  return p;
 }
 
 /* ---------- Types ---------- */
