@@ -303,7 +303,10 @@ function RaceTab({
   onBrake: (distances: number[]) => void;
 }) {
   const { data: race } = useSuspenseQuery(raceResultsQuery(season, round));
-  const { data: laps } = useSuspenseQuery(lapsQuery(season, round));
+  // Lap timings take ~9 paged requests, so they load in the background rather
+  // than holding up the whole page.
+  const lapsQ = useQuery(lapsQuery(season, round));
+  const laps = lapsQ.data ?? [];
 
   if (!race || !race.Results) {
     return <ErrorBox message="No results available for this round yet." />;
@@ -318,12 +321,24 @@ function RaceTab({
           Fastest Lap · {fastest.Driver.code} · {fastest.FastestLap?.Time.time}
         </p>
       )}
-      <Section title="Lap Times — All Laps">
-        <LapChart laps={laps} results={results} />
-      </Section>
-      <Section title="Fastest Lap per Driver — Gap to Best">
-        <BestLapChart laps={laps} results={results} />
-      </Section>
+      {laps.length === 0 ? (
+        <Section title="Lap Times — All Laps">
+          {lapsQ.isError ? (
+            <ErrorBox message="Could not load lap timings. Please try again." />
+          ) : (
+            <Spinner />
+          )}
+        </Section>
+      ) : (
+        <>
+          <Section title="Lap Times — All Laps">
+            <LapChart laps={laps} results={results} />
+          </Section>
+          <Section title="Fastest Lap per Driver — Gap to Best">
+            <BestLapChart laps={laps} results={results} />
+          </Section>
+        </>
+      )}
       <Section title="Fastest-Lap Telemetry — Speed · RPM · Throttle · Brake · Gear">
         {year < OPENF1_MIN_SEASON ? (
           <TelemetryUnavailableNote year={year} />
