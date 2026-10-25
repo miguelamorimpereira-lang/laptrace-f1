@@ -35,10 +35,13 @@ function isTab(v: unknown): v is SessionKind {
 }
 
 export const Route = createFileRoute("/races/$round")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    season: s.season == null || s.season === "" ? undefined : String(s.season),
-    tab: isTab(s.tab) ? s.tab : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>) => {
+    const out: { season?: string; tab?: SessionKind } = {};
+    const season = seasonSearch(s).season;
+    if (season) out.season = season;
+    if (isTab(s.tab)) out.tab = s.tab;
+    return out;
+  },
   loaderDeps: ({ search }) => ({ season: search.season }),
   loader: async ({ context, deps, params }) => {
     const seasons = await context.queryClient.ensureQueryData(seasonsQuery());

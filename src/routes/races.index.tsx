@@ -8,9 +8,7 @@ import { RaceCard } from "@/components/RaceCard";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/races/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    season: s.season == null || s.season === "" ? undefined : String(s.season),
-  }),
+  validateSearch: seasonSearch,
   loaderDeps: ({ search }) => ({ season: search.season }),
   loader: async ({ context, deps }) => {
     const seasons = await context.queryClient.ensureQueryData(seasonsQuery());

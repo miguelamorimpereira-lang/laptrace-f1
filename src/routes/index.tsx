@@ -16,9 +16,7 @@ import { useI18n } from "@/lib/i18n";
 import logo from "@/assets/lap-trace-f1-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    season: s.season == null || s.season === "" ? undefined : String(s.season),
-  }),
+  validateSearch: seasonSearch,
   loaderDeps: ({ search }) => ({ season: search.season }),
   head: () => ({
     meta: [
