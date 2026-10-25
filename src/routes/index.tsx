@@ -1,4 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
+import { seasonSearch } from "@/lib/search";
 import { useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import {
   seasonsQuery,
@@ -15,9 +21,7 @@ import { useI18n } from "@/lib/i18n";
 import logo from "@/assets/lap-trace-f1-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    season: s.season == null || s.season === "" ? undefined : String(s.season),
-  }),
+  validateSearch: seasonSearch,
   loaderDeps: ({ search }) => ({ season: search.season }),
   head: () => ({
     meta: [
@@ -47,9 +51,9 @@ export const Route = createFileRoute("/")({
     return { season };
   },
   pendingComponent: () => <Spinner />,
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }: ErrorComponentProps) => (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <ErrorBox message={error.message} />
+      <ErrorBox message={error instanceof Error ? error.message : String(error)} />
     </div>
   ),
   component: Home,

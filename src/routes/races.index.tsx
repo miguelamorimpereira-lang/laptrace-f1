@@ -1,4 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
+import { seasonSearch } from "@/lib/search";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { seasonsQuery, racesQuery } from "@/lib/jolpica";
 import { ErrorBox, Spinner } from "@/components/ui-bits";
@@ -7,9 +12,7 @@ import { RaceCard } from "@/components/RaceCard";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/races/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    season: s.season == null || s.season === "" ? undefined : String(s.season),
-  }),
+  validateSearch: seasonSearch,
   loaderDeps: ({ search }) => ({ season: search.season }),
   loader: async ({ context, deps }) => {
     const seasons = await context.queryClient.ensureQueryData(seasonsQuery());
@@ -27,9 +30,9 @@ export const Route = createFileRoute("/races/")({
     ],
   }),
   pendingComponent: () => <Spinner />,
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }: ErrorComponentProps) => (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <ErrorBox message={error.message} />
+      <ErrorBox message={error instanceof Error ? error.message : String(error)} />
     </div>
   ),
   component: Races,
